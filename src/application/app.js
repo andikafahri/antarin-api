@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
 });
 
 app.use(cors({
-	origin: 'https://antarin-web.vercel.app/',
+	origin: 'https://antarin-web.vercel.app',
 	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 	allowedHeaders: ['Content-Type', 'Authorization'],
 	credentials: true
