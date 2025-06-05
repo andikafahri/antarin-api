@@ -635,7 +635,8 @@ const get = async (id_user) => {
 			rel_merchant: {
 				select: {
 					id: true,
-					name: true
+					name: true,
+					image: true
 				}
 			},
 			rel_courier: {
