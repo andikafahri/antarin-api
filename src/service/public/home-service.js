@@ -102,6 +102,7 @@ const getList = async (filterQuery) => {
 					id: true,
 					name: true,
 					address: true,
+					image: true,
 					is_open: true
 				}
 			},
@@ -121,6 +122,7 @@ const getList = async (filterQuery) => {
 				id: merchant.id,
 				name: merchant.name,
 				address: merchant.address,
+				image: merchant.image,
 				is_open: merchant.is_open,
 				menus: []
 			}

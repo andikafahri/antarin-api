@@ -267,7 +267,8 @@ const create = async (ref, request) => {
 		select: {
 			id: true,
 			name: true,
-			price: true
+			price: true,
+			image: true
 		}
 	})
 
@@ -286,9 +287,11 @@ const create = async (ref, request) => {
 
 	const name_menu = {}
 	const price_menu = {}
+	const image_menu = {}
 	findMenu.forEach(item => {
 		name_menu[item.id] = item.name
 		price_menu[item.id] = item.price
+		image_menu[item.id] = item.image
 	})
 
 	// CHECK VARIANT IN DATABASE
@@ -389,6 +392,7 @@ const create = async (ref, request) => {
 			note: item.note,
 			price_menu: price_menu[item.id_menu],
 			price_variant: price_variant[item.id_variant],
+			image: image_menu[item.id_menu],
 			id_order: idOrder,
 			created_at: new Date()
 		}))
@@ -661,7 +665,8 @@ const get = async (id_user) => {
 					name_variant: true,
 					price_variant: true,
 					qty: true,
-					note: true
+					note: true,
+					image: true
 				}
 			},
 			rel_status: {
@@ -715,6 +720,7 @@ const get = async (id_user) => {
 			price_variant: item.price_variant,
 			qty: item.qty,
 			note: item.note,
+			image: item.image,
 			total_price: (Number(item.price_menu) + Number(item.price_variant)) * item.qty
 		}))
 	}

@@ -108,6 +108,7 @@ model User {
 	email String @db.VarChar(100)
 	phone String? @db.VarChar(20)
 	poin Int
+	image String? @db.VarChar(100)
 	id_status Int
 	created_at DateTime @default(now())
 	update_at DateTime?
@@ -129,6 +130,7 @@ model Courier {
 	number_plate String @db.VarChar(20)
 	id_brand Int
 	color String @db.VarChar(30)
+	image String? @db.VarChar(100)
 	is_active Boolean @default(false)
 	id_status Int
 	created_at DateTime @default(now())
@@ -153,6 +155,7 @@ model Merchant {
 	id_prov Int
 	email String @db.VarChar(100)
 	phone String? @db.VarChar(20)
+	image String? @db.VarChar(100)
 	is_open Boolean @default(false)
 	id_status Int
 	created_at DateTime @default(now())
@@ -176,6 +179,7 @@ model Menu {
 	id_merchant String @db.VarChar(100)
 	id_category Int
 	price Decimal @db.Decimal(10,2)
+	image String? @db.VarChar(100)
 	is_ready Boolean @default(true)
 	created_at DateTime @default(now())
 	update_at DateTime?
@@ -254,6 +258,7 @@ model Order_item {
 	note String? @db.VarChar(300)
 	price_menu Decimal @db.Decimal(10,2)
 	price_variant Decimal @db.Decimal(10,2)
+	image String? @db.VarChar(100)
 	id_order String @db.VarChar(100)
 	created_at DateTime @default(now())
 	update_at DateTime?
@@ -294,6 +299,7 @@ model Log_menu_unavailable {
 	unavailable_variant Boolean @default(false)
 	available_qty Int
 	note String? @db.VarChar(200)
+	image String? @db.VarChar(100)
 	is_confirm Boolean @default(false)
 	change_by String @db.VarChar(50)
 	id_changer String @db.VarChar(100)

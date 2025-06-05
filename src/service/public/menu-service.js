@@ -145,6 +145,7 @@ const getCurrentMerchant = async(id_merchant) => {
 			id: true,
 			name: true,
 			address: true,
+			image: true,
 			is_open: true,
 			rel_menu: {
 				select: {
@@ -214,6 +215,7 @@ const getMenuByMerchant = async(id_merchant, filter) => {
 			id: true,
 			name: true,
 			price: true,
+			image: true,
 			is_ready: true,
 			rel_category: {
 				select: {
@@ -280,6 +282,7 @@ const getMenuByMerchant = async(id_merchant, filter) => {
 			id: menu.id,
 			name: menu.name,
 			price: menu.price,
+			image: menu.image,
 			is_ready: menu.is_ready,
 			variants: {}
 		}
