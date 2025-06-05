@@ -69,6 +69,7 @@ menuRouter.delete('/:id', menuController.remove)
 
 // ORDER USER
 orderUserRouter.post('/:id_merchant', orderUserController.create)
+orderUserRouter.post('/cancel/:id_order', orderUserController.cancel)
 orderUserRouter.get('/', orderUserController.get)
 orderUserRouter.get('/unavailable', orderUserController.getUnavailable)
 orderUserRouter.put('/unavailable/confirm', orderUserController.confirm)

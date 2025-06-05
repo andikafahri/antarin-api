@@ -10,6 +10,11 @@ import publicDestinationController from '../controller/public/cost-controller.js
 const publicRouter = new express.Router()
 const public2Router = new express.Router()
 
+// TEST
+publicRouter.get('/api/test', (req, res) => {
+	res.send('API IS CONNECTED')
+})
+
 // USER
 publicRouter.post('/api/user', userController.register)
 publicRouter.post('/api/user/login', userController.login)

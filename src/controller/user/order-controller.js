@@ -16,6 +16,17 @@ const create = async (req, res, next) => {
 	}
 }
 
+const cancel = async (req, res, next) => {
+	try{
+		const result = await orderService.cancel(req.user.id, req.params.id_order)
+		res.status(200).json({
+			message: 'Order berhasil dibatalkan'
+		})
+	}catch(e){
+		next(e)
+	}
+}
+
 const get = async (req, res, next) => {
 	try{
 		const result = await orderService.get(req.user.id)
@@ -51,6 +62,7 @@ const confirm = async (req, res, next) => {
 
 export default {
 	create,
+	cancel,
 	get,
 	getUnavailable,
 	confirm

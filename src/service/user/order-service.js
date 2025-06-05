@@ -1,6 +1,7 @@
 import {validate} from '../../validation/validation.js'
 import {
 	createOrderValidation,
+	cancelOrderValidation,
 	getOrderValidation,
 	confirmValidation
 } from '../../validation/user/order-validation.js'
@@ -8,6 +9,7 @@ import {prismaClient} from '../../application/database.js'
 import {ErrorResponse} from '../../application/error-response.js'
 import uniqid from 'uniqid'
 import {logger} from '../../application/logger.js'
+import systemCostService from '../../service/public/cost-service.js'
 
 const getIdLogOrderByUser = async (id_user) => {
 	const result = await prismaClient.$transaction(async (tx) => {
@@ -346,6 +348,7 @@ const create = async (ref, request) => {
 
 	logger.info('id_user: '+ref.id_user)
 	const idOrder = uniqid()
+	const dataSystemCost = await systemCostService.getSystemCost(req.destination)
 	const result = await prismaClient.$transaction(async (tx) => {
 		await tx.order.create({
 			data: {
@@ -354,7 +357,7 @@ const create = async (ref, request) => {
 				// name_user: user.name,
 				id_merchant: ref.id_merchant,
 				// name_merchant: merchant.name,
-				id_courier: 'g2pc55b8m9y2c1ox',
+				// id_courier: null,
 				// name_courier: courier.name,
 				destination: req.destination,
 				id_subd: req.id_subd,
@@ -364,7 +367,8 @@ const create = async (ref, request) => {
 				id_prov: req.id_prov,
 				// name_prov: prov.name,
 				id_status: 1,
-				shipping_cost: '1000',
+				shipping_cost: dataSystemCost.shipping_cost,
+				service_cost: dataSystemCost.service_cost,
 				created_at: new Date()
 			},
 			select: {
@@ -409,6 +413,184 @@ const create = async (ref, request) => {
 	return result
 }
 
+const cancel = async (id_user, id_order) => {
+	validate(cancelOrderValidation, id_order)
+
+	const findOrder = await prismaClient.order.findFirst({
+		where: {
+			id: id_order,
+			id_user: id_user,
+			id_status: {
+				in: [1,4]
+			}
+		},
+		select: {
+			id: true,
+			id_user: true,
+			id_merchant: true,
+			id_courier: true,
+			destination: true,
+			shipping_cost: true,
+			service_cost: true,
+			id_city: true,
+			id_subd: true,
+			id_prov: true,
+			id_status: true,
+			rel_user: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_merchant: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_courier: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_city: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_subd: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_prov: {
+				select: {
+					id: true,
+					name: true
+				}
+			}
+		}
+	})
+
+	if(!findOrder){
+		throw new ErrorResponse(404, 'Order tidak ditemukan')
+	}
+
+	if(![1,4].includes(findOrder.id_status)){
+		throw new ErrorResponse(400, 'Kamu tidak dapat membatalkan pesanan ini')
+	}
+
+	const findOrderItem = await prismaClient.order_item.findMany({
+		where: {
+			id_order: id_order
+		}
+		// select: {
+		// 	id: true,
+		// 	id_menu: true,
+		// 	name_menu: true,
+		// 	price_menu: true,
+		// 	id_variant: true,
+		// 	name_variant: true,
+		// 	price_variant: true,
+		// 	id_order: true,
+		// 	qty: true,
+		// 	note: true
+		// }
+	})
+
+	return prismaClient.$transaction(async (tx) => {
+		// ADD TO HISTORY ORDER
+		try{
+			await tx.history_order.create({
+				data: {
+					id: findOrder.id,
+					id_user: findOrder.id_user,
+					name_user: findOrder.rel_user.name,
+					id_merchant: findOrder.id_merchant,
+					name_merchant: findOrder.rel_merchant.name,
+					id_courier: findOrder.id_courier,
+					name_courier: findOrder.rel_courier.name,
+					destination: findOrder.destination,
+					shipping_cost: findOrder.shipping_cost,
+					service_cost: findOrder.service_cost,
+					id_city: findOrder.id_city,
+					name_city: findOrder.rel_city.name,
+					id_subd: findOrder.id_subd,
+					name_subd: findOrder.rel_subd.name,
+					id_prov: findOrder.id_prov,
+					name_prov: findOrder.rel_prov.name,
+					created_at: new Date()
+				}
+			})
+		}catch(error){
+			throw new ErrorResponse(500, 'Server error')
+		}
+
+		// ADD TO HISTORY ORDER ITEM
+		try{
+			await tx.history_order_item.createMany({
+				data: findOrderItem.map(item => ({
+					id: item.id,
+					id_menu: item.id_menu,
+					name_menu: item.name_menu,
+					price_menu: item.price_menu,
+					id_variant: item.id_variant,
+					name_variant: item.name_variant,
+					price_variant: item.price_variant,
+					id_order: item.id_order,
+					qty: item.qty,
+					note: item.note,
+					created_at: new Date()
+				}))
+			})
+		}catch(error){
+			throw new ErrorResponse(500, 'Server error')
+		}
+
+		// ADD TO LOG ORDER
+		try{
+			await tx.log_order.create({
+				data: {
+					id: uniqid(),
+					id_order: id_order,
+					id_status: 12,
+					detail_status: null,
+					change_by: 'user',
+					id_changer: id_user,
+					time: new Date()
+				}
+			})
+		}catch(error){
+			throw new ErrorResponse(500, 'Server error')
+		}
+
+		// DELETE FROM ORDER ITEM
+		try{
+			await tx.order_item.deleteMany({
+				where: {
+					id_order: id_order
+				}
+			})
+		}catch(error){
+			throw new ErrorResponse(500, 'Server error')
+		}
+
+		// DELETE FROM ORDER
+		try{
+			await tx.order.delete({
+				where: {
+					id: id_order
+				}
+			})
+		}catch(error){
+			throw new ErrorResponse(500, 'Server error')
+		}
+	})
+}
+
 const get = async (id_user) => {
 	const req = validate(getOrderValidation, id_user)
 
@@ -435,6 +617,7 @@ const get = async (id_user) => {
 			id: true,
 			destination: true,
 			shipping_cost: true,
+			service_cost: true,
 			rel_subd: {
 				select: {
 					name: true
@@ -490,6 +673,22 @@ const get = async (id_user) => {
 		}
 	})
 
+	let dataCourier = {}
+	// dataCourier.rel_brand = {}
+
+	if(data.rel_courier){
+		// dataCourier = data.rel_courier
+
+		dataCourier = {
+			name: data.rel_courier.name,
+			number_plate: data.rel_courier.number_plate,
+			vehicle: data.rel_courier.rel_brand.brand + ' ' + data.rel_courier.rel_brand.name,
+			vehicle_color: data.rel_courier.color
+		}
+	}else{
+		dataCourier = null
+	}
+
 	const result = {
 		id_order: data.id,
 		status: {
@@ -500,12 +699,13 @@ const get = async (id_user) => {
 		...data,
 		destination: data.destination + ', ' + data.rel_subd.name + ', ' + data.rel_city.name,
 		merchant: data.rel_merchant,
-		courier: {
-			name: data.rel_courier.name,
-			number_plate: data.rel_courier.number_plate,
-			vehicle: data.rel_courier.rel_brand.brand + ' ' + data.rel_courier.rel_brand.name,
-			vehicle_color: data.rel_courier.color
-		},
+		// courier: {
+		// 	name: dataCourier.name,
+		// 	number_plate: dataCourier.number_plate,
+		// 	vehicle: dataCourier.rel_brand.brand + ' ' + dataCourier.rel_brand.name,
+		// 	vehicle_color: dataCourier.color
+		// },
+		courier: dataCourier,
 		items: data.rel_order_item.map(item => ({
 			id: item.id,
 			id_menu: item.id_menu,
@@ -1054,6 +1254,7 @@ const confirm = async (id_user, request) => {
 
 export default {
 	create,
+	cancel,
 	get,
 	getUnavailable,
 	confirm

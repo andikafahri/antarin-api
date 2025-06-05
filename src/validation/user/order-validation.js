@@ -6,6 +6,17 @@ import {
 	idProvSchema
 } from '../schema_validation.js'
 
+const idOrderSchema = Joi.string()
+.max(100)
+.trim()
+.empty('')
+.messages({
+	'string.base': 'Id Order tidak boleh kosong',
+	'string.max': 'Id Order tidak boleh kosong',
+	'string.empty': 'Id Order tidak boleh kosong',
+	'any.required': 'Id Order tidak boleh kosong'
+})
+
 const idMenuSchema = Joi.string()
 .max(100)
 .trim()
@@ -78,6 +89,8 @@ const createOrderValidation = Joi.object({
 	})
 })
 
+const cancelOrderValidation = idOrderSchema.required()
+
 const getOrderValidation = idUserSchema.required()
 
 const confirmValidation = Joi.object({
@@ -98,6 +111,7 @@ const confirmValidation = Joi.object({
 
 export {
 	createOrderValidation,
+	cancelOrderValidation,
 	getOrderValidation,
 	confirmValidation
 }

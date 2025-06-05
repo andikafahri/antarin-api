@@ -36,11 +36,12 @@ io.on('connection', (socket) => {
 });
 
 app.use(cors({
-	origin: 'https://antarin-web.vercel.app',
-	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization'],
-	credentials: true
-}));
+	// origin: 'https://antarin-web.vercel.app',
+	origin: ['http://192.168.43.226:5173', 'http://localhost:5173'],
+		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
+		credentials: true
+	}));
 
 
 app.use(express.json())

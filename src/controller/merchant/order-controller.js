@@ -87,6 +87,11 @@ const finish = async (req, res, next) => {
 	try{
 		const result = await orderService.finish(ref)
 
+		setTimeout(() => {
+			const idOrder = req.params.id_order
+			io.to(idOrder).emit('updateStatusOrder')
+		}, 3000)
+
 		res.status(200).json({
 			message: 'Menunggu kurir mengambil pesanan'
 		})

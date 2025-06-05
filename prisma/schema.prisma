@@ -5,343 +5,345 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
+	provider = "prisma-client-js"
+	// output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+	provider = "mysql"
+	url      = env("DATABASE_URL")
 }
 
 model Status {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(20)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id Int @id @default(autoincrement())
+	name String @db.VarChar(20)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_user User[]
-  rel_courier Courier[]
-  rel_merchant Merchant[]
+	rel_user User[]
+	rel_courier Courier[]
+	rel_merchant Merchant[]
 
-  @@map("status")
+	@@map("status")
 }
 
 model Status_order {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id Int @id @default(autoincrement())
+	name String @db.VarChar(50)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_order Order[]
-  rel_log_order Log_order[]
+	rel_order Order[]
+	rel_log_order Log_order[]
 
-  @@map("status_order")
+	@@map("status_order")
 }
 
 model Brand {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  brand String @db.VarChar(20)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id Int @id @default(autoincrement())
+	name String @db.VarChar(50)
+	brand String @db.VarChar(20)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_courier Courier[]
+	rel_courier Courier[]
 
-  @@map("brand")
+	@@map("brand")
 }
 
 model Subdistrict {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  id_city Int
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id Int @id @default(autoincrement())
+	name String @db.VarChar(50)
+	id_city Int
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_merchant Merchant[]
-  rel_order Order[]
+	rel_merchant Merchant[]
+	rel_order Order[]
 
-  @@map("subdistrict")
+	@@map("subdistrict")
 }
 
 model City {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  id_prov Int
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id Int @id @default(autoincrement())
+	name String @db.VarChar(50)
+	id_prov Int
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_merchant Merchant[]
-  rel_order Order[]
+	rel_merchant Merchant[]
+	rel_order Order[]
 
-  @@map("city")
+	@@map("city")
 }
 
 model Province {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id Int @id @default(autoincrement())
+	name String @db.VarChar(50)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_merchant Merchant[]
-  rel_order Order[]
+	rel_merchant Merchant[]
+	rel_order Order[]
 
-  @@map("province")
+	@@map("province")
 }
 
 model Category {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id Int @id @default(autoincrement())
+	name String @db.VarChar(50)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_menu Menu[]
+	rel_menu Menu[]
 
-  @@map("category")
+	@@map("category")
 }
 
 model User {
-  id String @id @db.VarChar(100)
-  username String @unique @db.VarChar(100)
-  password String @db.VarChar(200)
-  name String @db.VarChar(100)
-  email String @db.VarChar(100)
-  phone String? @db.VarChar(20)
-  poin Int
-  id_status Int
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	username String @unique @db.VarChar(100)
+	password String @db.VarChar(200)
+	name String @db.VarChar(100)
+	email String @db.VarChar(100)
+	phone String? @db.VarChar(20)
+	poin Int
+	id_status Int
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_order Order[]
+	rel_order Order[]
 
-  rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@map("user")
+	@@map("user")
 }
 
 model Courier {
-  id String @id @db.VarChar(100)
-  username String @unique @db.VarChar(100)
-  password String @db.VarChar(200)
-  name String @db.VarChar(100)
-  email String @db.VarChar(100)
-  phone String? @db.VarChar(20)
-  number_plate String @db.VarChar(20)
-  id_brand Int
-  color String @db.VarChar(30)
-  is_active Boolean @default(false)
-  id_status Int
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	username String @unique @db.VarChar(100)
+	password String @db.VarChar(200)
+	name String @db.VarChar(100)
+	email String @db.VarChar(100)
+	phone String? @db.VarChar(20)
+	number_plate String @db.VarChar(20)
+	id_brand Int
+	color String @db.VarChar(30)
+	is_active Boolean @default(false)
+	id_status Int
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_order Order[]
+	rel_order Order[]
 
-  rel_brand Brand @relation(fields: [id_brand], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_brand Brand @relation(fields: [id_brand], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@map("courier")
+	@@map("courier")
 }
 
 model Merchant {
-  id String @id @db.VarChar(100)
-  username String @unique @db.VarChar(100)
-  password String @db.VarChar(200)
-  name String @db.VarChar(100)
-  address String @db.VarChar(200)
-  id_subd Int
-  id_city Int
-  id_prov Int
-  email String @db.VarChar(100)
-  phone String? @db.VarChar(20)
-  is_open Boolean @default(false)
-  id_status Int
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	username String @unique @db.VarChar(100)
+	password String @db.VarChar(200)
+	name String @db.VarChar(100)
+	address String @db.VarChar(200)
+	id_subd Int
+	id_city Int
+	id_prov Int
+	email String @db.VarChar(100)
+	phone String? @db.VarChar(20)
+	is_open Boolean @default(false)
+	id_status Int
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_menu Menu[]
-  rel_order Order[]
+	rel_menu Menu[]
+	rel_order Order[]
 
-  rel_subd Subdistrict @relation(fields: [id_subd], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_city City @relation(fields: [id_city], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_prov Province @relation(fields: [id_prov], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_subd Subdistrict @relation(fields: [id_subd], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_city City @relation(fields: [id_city], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_prov Province @relation(fields: [id_prov], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@map("merchant")
+	@@map("merchant")
 }
 
 model Menu {
-  id String @id @db.VarChar(100)
-  name String @db.VarChar(100)
-  detail String? @db.VarChar(300)
-  id_merchant String @db.VarChar(100)
-  id_category Int
-  price Decimal @db.Decimal(10,2)
-  is_ready Boolean @default(true)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	name String @db.VarChar(100)
+	detail String? @db.VarChar(300)
+	id_merchant String @db.VarChar(100)
+	id_category Int
+	price Decimal @db.Decimal(10,2)
+	is_ready Boolean @default(true)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_variant Variant[]
+	rel_variant Variant[]
 
-  rel_merchant Merchant @relation(fields: [id_merchant], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  rel_category Category @relation(fields: [id_category], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_merchant Merchant @relation(fields: [id_merchant], references: [id], onDelete: Cascade, onUpdate: Cascade)
+	rel_category Category @relation(fields: [id_category], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@map("menu")
+	@@map("menu")
 }
 
 model Variant {
-  id String @id @db.VarChar(100)
-  name String @db.VarChar(50)
-  id_menu String @db.VarChar(100)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	name String @db.VarChar(50)
+	id_menu String @db.VarChar(100)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_variant_item Variant_item[]
+	rel_variant_item Variant_item[]
 
-  rel_menu Menu @relation(fields: [id_menu], references: [id], onDelete: Cascade, onUpdate: Cascade)
+	rel_menu Menu @relation(fields: [id_menu], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@map("variant")
+	@@map("variant")
 }
 
 model Variant_item {
-  id String @id @db.VarChar(100)
-  name String @db.VarChar(50)
-  id_variant String @db.VarChar(100)
-  price Decimal @db.Decimal(10,2)
-  is_ready Boolean @default(true)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	name String @db.VarChar(50)
+	id_variant String @db.VarChar(100)
+	price Decimal @db.Decimal(10,2)
+	is_ready Boolean @default(true)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_variant Variant @relation(fields: [id_variant], references: [id], onDelete: Cascade, onUpdate: Cascade)
+	rel_variant Variant @relation(fields: [id_variant], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@map("variant_item")
+	@@map("variant_item")
 }
 
 model Order {
-  id String @id @db.VarChar(100)
-  id_user String @db.VarChar(100)
-  id_merchant String @db.VarChar(100)
-  id_courier String @db.VarChar(100)
-  destination String @db.VarChar(200)
-  id_subd Int
-  id_city Int
-  id_prov Int
-  shipping_cost Decimal @db.Decimal(10,2)
-  id_status Int
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	id_user String @db.VarChar(100)
+	id_merchant String @db.VarChar(100)
+	id_courier String? @db.VarChar(100)
+	destination String @db.VarChar(200)
+	id_subd Int
+	id_city Int
+	id_prov Int
+	shipping_cost Decimal @db.Decimal(10,2)
+	service_cost Decimal @db.Decimal(10,2)
+	id_status Int
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_order_item Order_item[]
+	rel_order_item Order_item[]
 
-  rel_user User @relation(fields: [id_user], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_merchant Merchant @relation(fields: [id_merchant], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_courier Courier @relation(fields: [id_courier], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_subd Subdistrict @relation(fields: [id_subd], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_city City @relation(fields: [id_city], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_prov Province @relation(fields: [id_prov], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  rel_status Status_order @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_user User @relation(fields: [id_user], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_merchant Merchant @relation(fields: [id_merchant], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_courier Courier? @relation(fields: [id_courier], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_subd Subdistrict @relation(fields: [id_subd], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_city City @relation(fields: [id_city], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_prov Province @relation(fields: [id_prov], references: [id], onDelete: Restrict, onUpdate: Cascade)
+	rel_status Status_order @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@map("order")
+	@@map("order")
 }
 
 model Order_item {
-  id String @id @db.VarChar(100)
-  id_menu String @db.VarChar(100)
-  name_menu String @db.VarChar(100)
-  id_variant String @db.VarChar(100)
-  name_variant String @db.VarChar(50)
-  qty Int
-  note String? @db.VarChar(300)
-  price_menu Decimal @db.Decimal(10,2)
-  price_variant Decimal @db.Decimal(10,2)
-  id_order String @db.VarChar(100)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	id_menu String @db.VarChar(100)
+	name_menu String @db.VarChar(100)
+	id_variant String @db.VarChar(100)
+	name_variant String @db.VarChar(50)
+	qty Int
+	note String? @db.VarChar(300)
+	price_menu Decimal @db.Decimal(10,2)
+	price_variant Decimal @db.Decimal(10,2)
+	id_order String @db.VarChar(100)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_order Order @relation(fields: [id_order], references: [id])
+	rel_order Order @relation(fields: [id_order], references: [id])
 
-  @@map("order_item")
+	@@map("order_item")
 }
 
 model Log_order {
-  id String @id @db.VarChar(100)
-  id_order String @db.VarChar(100)
-  id_status Int
-  detail_status String? @db.VarChar(200)
-  change_by String @db.VarChar(50)
-  id_changer String @db.VarChar(100)
-  time DateTime @default(now())
+	id String @id @db.VarChar(100)
+	id_order String @db.VarChar(100)
+	id_status Int
+	detail_status String? @db.VarChar(200)
+	change_by String @db.VarChar(50)
+	id_changer String @db.VarChar(100)
+	time DateTime @default(now())
 
-  rel_log_menu_unavailable Log_menu_unavailable[]
+	rel_log_menu_unavailable Log_menu_unavailable[]
 
-  rel_status Status_order @relation(fields: [id_status], references: [id])
+	rel_status Status_order @relation(fields: [id_status], references: [id])
 
-  @@map("log_order")
+	@@map("log_order")
 }
 
 model Log_menu_unavailable {
-  id String @id @db.VarChar(100)
-  id_log_order String @db.VarChar(100)
-  id_item String @db.VarChar(100)
-  id_menu String @db.VarChar(100)
-  name_menu String @db.VarChar(100)
-  id_variant String @db.VarChar(100)
-  name_variant String @db.VarChar(50)
-  price_menu Decimal @db.Decimal(10,2)
-  price_variant Decimal @db.Decimal(10,2)
-  qty Int
-  unavailable_menu Boolean @default(false)
-  unavailable_variant Boolean @default(false)
-  available_qty Int
-  note String? @db.VarChar(200)
-  is_confirm Boolean @default(false)
-  change_by String @db.VarChar(50)
-  id_changer String @db.VarChar(100)
-  time DateTime @default(now())
+	id String @id @db.VarChar(100)
+	id_log_order String @db.VarChar(100)
+	id_item String @db.VarChar(100)
+	id_menu String @db.VarChar(100)
+	name_menu String @db.VarChar(100)
+	id_variant String @db.VarChar(100)
+	name_variant String @db.VarChar(50)
+	price_menu Decimal @db.Decimal(10,2)
+	price_variant Decimal @db.Decimal(10,2)
+	qty Int
+	unavailable_menu Boolean @default(false)
+	unavailable_variant Boolean @default(false)
+	available_qty Int
+	note String? @db.VarChar(200)
+	is_confirm Boolean @default(false)
+	change_by String @db.VarChar(50)
+	id_changer String @db.VarChar(100)
+	time DateTime @default(now())
 
-  rel_log_order Log_order @relation(fields: [id_log_order], references: [id])
+	rel_log_order Log_order @relation(fields: [id_log_order], references: [id])
 
-  @@map("log_menu_unavailable")
+	@@map("log_menu_unavailable")
 }
 
 model History_order {
-  id String @id @db.VarChar(100)
-  id_user String @db.VarChar(100)
-  name_user String @db.VarChar(100)
-  id_merchant String @db.VarChar(100)
-  name_merchant String @db.VarChar(100)
-  id_courier String @db.VarChar(100)
-  name_courier String @db.VarChar(100)
-  destination String @db.VarChar(200)
-  id_subd Int
-  name_subd String @db.VarChar(50)
-  id_city Int
-  name_city String @db.VarChar(50)
-  id_prov Int
-  name_prov String @db.VarChar(50)
-  shipping_cost Decimal @db.Decimal(10,2)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	id_user String @db.VarChar(100)
+	name_user String @db.VarChar(100)
+	id_merchant String @db.VarChar(100)
+	name_merchant String @db.VarChar(100)
+	id_courier String @db.VarChar(100)
+	name_courier String @db.VarChar(100)
+	destination String @db.VarChar(200)
+	id_subd Int
+	name_subd String @db.VarChar(50)
+	id_city Int
+	name_city String @db.VarChar(50)
+	id_prov Int
+	name_prov String @db.VarChar(50)
+	shipping_cost Decimal @db.Decimal(10,2)
+	service_cost Decimal @db.Decimal(10,2)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_history_order_item History_order_item[]
+	rel_history_order_item History_order_item[]
 
-  @@map("history_order")
+	@@map("history_order")
 }
 
 model History_order_item {
-  id String @id @db.VarChar(100)
-  id_menu String @db.VarChar(100)
-  name_menu String @db.VarChar(100)
-  id_variant String @db.VarChar(100)
-  name_variant String @db.VarChar(50)
-  qty Int
-  note String? @db.VarChar(300)
-  price_menu Decimal @db.Decimal(10,2)
-  price_variant Decimal @db.Decimal(10,2)
-  id_order String @db.VarChar(100)
-  created_at DateTime @default(now())
-  update_at DateTime?
+	id String @id @db.VarChar(100)
+	id_menu String @db.VarChar(100)
+	name_menu String @db.VarChar(100)
+	id_variant String @db.VarChar(100)
+	name_variant String @db.VarChar(50)
+	qty Int
+	note String? @db.VarChar(300)
+	price_menu Decimal @db.Decimal(10,2)
+	price_variant Decimal @db.Decimal(10,2)
+	id_order String @db.VarChar(100)
+	created_at DateTime @default(now())
+	update_at DateTime?
 
-  rel_history_order History_order @relation(fields: [id_order], references: [id])
+	rel_history_order History_order @relation(fields: [id_order], references: [id])
 
-  @@map("history_order_item")
+	@@map("history_order_item")
 }
