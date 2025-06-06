@@ -225,7 +225,49 @@ const accept = async (filter, body) => {
 
 	await checkOrder(req.filter.id_order, req.filter.id_merchant, [1,11])
 
-	const result = await prismaClient.$transaction(async (tx) => {
+	// GET STATUS & DATA COURIER FOR UPDATE STATUS ORDER VIA SOCKET
+	const getStatusOrder = await prismaClient.status_order.findUnique({
+		where: {
+			id: 2
+		},
+		select: {
+			id: true,
+			name: true
+		}
+	})
+
+	const getCourier = await prismaClient.courier.findFirst({
+		where: {
+			id: 'g2pc55b8m9y2c1ox'
+		},
+		select: {
+			name: true,
+			number_plate: true,
+			color: true,
+			image: true,
+			rel_brand: {
+				select: {
+					name: true,
+					brand: true
+				}
+			}
+		}
+	})
+
+	const dataCourier = {
+		name: getCourier.name,
+		vehicle: {
+			number_plate: getCourier.number_plate,
+			vehicle: getCourier.rel_brand.brand + ' ' + getCourier.rel_brand.name,
+			vehicle_color: getCourier.color
+		}
+	}
+
+	delete dataCourier.rel_brand
+
+	// UPDATE ON DATABASE
+	// const result = await prismaClient.$transaction(async (tx) => {
+	await prismaClient.$transaction(async (tx) => {
 		await prismaClient.order.update({
 			where: {
 				id: req.filter.id_order,
@@ -259,6 +301,14 @@ const accept = async (filter, body) => {
 			}
 		})
 	})
+
+	const result = {
+		status: {
+			id: 2,
+			message: getStatusOrder.name
+		},
+		courier: dataCourier
+	}
 
 	return result
 }
@@ -451,7 +501,7 @@ const finish = async (ref) => {
 		throw new ErrorResponse(404, 'Order tidak ditemukan')
 	}
 
-	const result = await prismaClient.$transaction(async (tx) => {
+	await prismaClient.$transaction(async (tx) => {
 		await tx.order.update({
 			where: {
 				id: ref.id_order,
@@ -480,6 +530,24 @@ const finish = async (ref) => {
 			}
 		})
 	})
+
+	// GET STATUS & DATA COURIER FOR UPDATE STATUS ORDER VIA SOCKET
+	const getStatusOrder = await prismaClient.status_order.findUnique({
+		where: {
+			id: 5
+		},
+		select: {
+			id: true,
+			name: true
+		}
+	})
+
+	const result = {
+		status: {
+			id: 5,
+			message: getStatusOrder.name
+		}
+	}
 
 	return result
 }

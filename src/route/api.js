@@ -84,6 +84,7 @@ orderMerchantRouter.post('/:id_order/finish', orderMerchantController.finish)
 // ORDER COURIER
 orderCourierRouter.get('/', orderCourierController.get)
 orderCourierRouter.post('/deliver', orderCourierController.deliver)
+orderCourierRouter.post('/delivered', orderCourierController.delivered)
 orderCourierRouter.post('/finish', orderCourierController.finish)
 
 export {

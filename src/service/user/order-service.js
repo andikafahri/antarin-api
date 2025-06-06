@@ -699,7 +699,7 @@ const get = async (id_user) => {
 		id_order: data.id,
 		status: {
 			id: data.rel_status.id,
-			status: data.rel_status.name,
+			message: data.rel_status.name,
 			
 		},
 		...data,

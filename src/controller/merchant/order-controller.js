@@ -49,7 +49,7 @@ const accept = async (req, res, next) => {
 		setTimeout(() => {
 		// Emit ke client via WebSocket
 			const idOrder = req.params.id_order
-			io.to(idOrder).emit('updateStatusOrder', {status: 2})
+			io.to(idOrder).emit('updateStatusOrder', result)
 			console.log('Order '+idOrder+'updated to id status 2')
 		}, 3000)
 
@@ -89,7 +89,7 @@ const finish = async (req, res, next) => {
 
 		setTimeout(() => {
 			const idOrder = req.params.id_order
-			io.to(idOrder).emit('updateStatusOrder')
+			io.to(idOrder).emit('updateStatusOrder', result)
 		}, 3000)
 
 		res.status(200).json({
