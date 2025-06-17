@@ -40,7 +40,7 @@ const updateMerchantValidation = Joi.object({
 	id_city: idCitySchema.optional(),
 	id_prov: idProvSchema.optional(),
 	email:emailSchema.optional(),
-	phone:phoneSchema.optional().empty('')
+	phone:phoneSchema.optional().allow('')
 })
 
 const updatePasswordValidation = Joi.object({

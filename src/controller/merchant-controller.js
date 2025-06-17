@@ -1,3 +1,8 @@
+import express from 'express'
+import path from 'path'
+import {dirname} from 'path'
+import {fileURLToPath} from 'url'
+import fs from 'fs'
 import merchantService from '../service/merchant-service.js'
 
 const register = async (req, res, next) => {
@@ -55,10 +60,26 @@ const updatePassword = async (req, res, next) => {
 	}
 }
 
+// const getImage = async (req, res, next) => {
+// 	const __filename = fileURLToPath(import.meta.url)
+// 	const __dirname = dirname(__filename)
+
+// 	const imagePath = path.join(__dirname, '../../public/uploads/images/merchant', req.merchant.id)
+
+// 	if(!fs.existsSync(imagePath)){
+// 		return res.status(404).json({
+// 			message: 'Not Found'
+// 		})
+// 	}
+
+// 	express.static(imagePath)(req, res, next)
+// }
+
 export default {
 	register,
 	login,
 	get,
 	update,
 	updatePassword
+	// getImage
 }

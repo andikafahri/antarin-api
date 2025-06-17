@@ -61,7 +61,8 @@ const login = async (request) => {
 	}
 
 	const payload = {
-		id: findUser.id
+		id: findUser.id,
+		role: 'user'
 	}
 
 	const secretKey = process.env.JWT_SECRET_USER

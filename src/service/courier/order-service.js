@@ -17,6 +17,107 @@ const checkCourier = async (id_courier) => {
 	}
 }
 
+const getOrderForSocket = async (idOrder) => {
+	const data = await prismaClient.order.findFirst({
+		where: {
+			id: idOrder
+		},
+		select: {
+			id: true,
+			destination: true,
+			rel_user: {
+				select: {
+					name: true,
+				}
+			},
+			rel_subd: {
+				select: {
+					name: true
+				}
+			},
+			rel_city: {
+				select: {
+					name: true
+				}
+			},
+			rel_merchant: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_courier: {
+				select: {
+					name: true,
+					number_plate: true,
+					color: true,
+					rel_brand: {
+						select: {
+							name: true,
+							brand: true
+						}
+					}
+				}
+			},
+			rel_order_item: {
+				select: {
+					id: true,
+					id_menu: true,
+					name_menu: true,
+					price_menu: true,
+					name_variant: true,
+					price_variant: true,
+					qty: true,
+					note: true
+				}
+			},
+			rel_status: {
+				select: {
+					name: true
+				}
+			}
+		}
+	})
+
+	
+	const result = {
+		id_order: data.id,
+		status: data.rel_status.name,
+		...data,
+		user: data.rel_user.name,
+		destination: data.destination + ', ' + data.rel_subd.name + ', ' + data.rel_city.name,
+		merchant: data.rel_merchant,
+		courier: {
+			name: data?.rel_courier?.name,
+			number_plate: data?.rel_courier?.number_plate,
+			vehicle: data?.rel_courier?.rel_brand.brand + ' ' + data?.rel_courier?.rel_brand.name,
+			vehicle_color: data?.rel_courier?.color
+		},
+		items: data.rel_order_item.map(item => ({
+			id: item.id,
+			id_menu: item.id_menu,
+			name: item.name_menu,
+			price_menu: item.price_menu,
+			variant: item.name_variant,
+			price_variant: item.price_variant,
+			qty: item.qty,
+			note: item.note,
+			total_price: (Number(item.price_menu) + Number(item.price_variant)) * item.qty
+		}))
+	}
+
+	delete result.id
+	delete result.rel_user
+	delete result.rel_subd
+	delete result.rel_city
+	delete result.rel_merchant
+	delete result.rel_courier
+	delete result.rel_order_item
+	delete result.rel_status
+
+	return result
+}
+
 const get = async (id_courier) => {
 	await checkCourier(id_courier)
 
@@ -210,13 +311,16 @@ const deliver = async (id_courier) => {
 		}
 	})
 
-	const result = {
-		id_order: findOrder.id,
-		status: {
-			id: 6,
-			message: getStatusOrder.name
-		}
-	}
+	// const result = {
+	// 	id_order: findOrder.id,
+	// 	id_merchant: findOrder.id_merchant,
+	// 	status: {
+	// 		id: getStatusOrder.id,
+	// 		message: getStatusOrder.name
+	// 	}
+	// }
+
+	const result = getOrderForSocket(findOrder.id)
 
 	return result
 }

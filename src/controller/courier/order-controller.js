@@ -1,5 +1,6 @@
 import orderService from '../../service/courier/order-service.js'
-import {io} from '../../application/app.js'
+import {userSocket as ioUser} from '../../application/app.js'
+import {merchantSocket as ioMerchant} from '../../application/app.js'
 
 const get = async (req, res, next) => {
 	const id_courier = req.courier.id
@@ -22,7 +23,8 @@ const deliver = async (req, res, next) => {
 		const result = await orderService.deliver(id_courier)
 
 		setTimeout(() => {
-			io.to(result.id_order).emit('updateStatusOrder', result)
+			ioUser.to(`orderUser:${result.id_order}`).emit('updateStatusOrder', result)
+			ioMerchant.to(`orderMerchant:${result.merchant.id}`).emit('updatePickUp', result)
 		}, 3000)
 
 		res.status(200).json({

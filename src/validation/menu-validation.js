@@ -71,7 +71,8 @@ const isReadySchema = Joi.boolean()
 
 const createMenuWithVariantValidation = Joi.object({
 	name: nameSchema.required(),
-	detail: detailSchema.optional().empty(''),
+	// detail: detailSchema.optional().empty(''),
+	detail: detailSchema.optional().allow('', null).default(''),
 	id_category: idCategorySchema.required(),
 	price: priceSchema.required(),
 	is_ready: isReadySchema.required(),
@@ -105,7 +106,8 @@ const getListMenuValidation = Joi.string().max(100).required()
 
 const updateMenuWithVariantValidation = Joi.object({
 	name: nameSchema.required(),
-	detail: detailSchema.optional().empty(''),
+	// detail: detailSchema.optional().empty(''),
+	detail: detailSchema.optional().allow('', null).default(''),
 	id_category: idCategorySchema.required(),
 	price: priceSchema.required(),
 	is_ready: isReadySchema.required(),

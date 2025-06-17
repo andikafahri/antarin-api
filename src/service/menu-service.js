@@ -1,3 +1,8 @@
+import path from 'path'
+import {dirname} from 'path'
+import {fileURLToPath} from 'url'
+import fs from 'fs'
+import {promises as fsPromises} from 'fs'
 import {validate} from '../validation/validation.js'
 import {
 	// createMenuValidation,
@@ -11,20 +16,32 @@ import {ErrorResponse} from '../application/error-response.js'
 import uniqid from 'uniqid'
 import {logger} from '../application/logger.js'
 
+const deleteImage = async (id_merchant, filename) => {
+	const __filename = fileURLToPath(import.meta.url)
+	const __dirname = dirname(__filename)
+	const imagePath = path.join(__dirname, '../../public/uploads/images/merchant', id_merchant, filename)
+
+	if(fs.existsSync(imagePath)){
+		await fsPromises.unlink(imagePath)
+	}
+}
+
 const checkMenu = async (id, id_merchant) => {
 	const result = await prismaClient.menu.findFirst({
 		where: {
 			id: id,
 			id_merchant: id_merchant
-		},
-		select: {
-			name: true
 		}
+		// select: {
+		// 	name: true
+		// }
 	})
 
 	if(!result){
 		throw new ErrorResponse(404, 'Menu not found')
 	}
+
+	return result
 }
 
 const checkCategory = async (id_category) => {
@@ -74,8 +91,13 @@ const checkVariantItem = async (id_item, id_variant) => {
 	}
 }
 
-const createMenuwithVariant = async (id_merchant, request) => {
+const createMenuwithVariant = async (id_merchant, filename, request) => {
+	// return request
 	const req = validate(createMenuWithVariantValidation, request)
+
+	if(!filename){
+		throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
+	}
 
 	await checkCategory(req.id_category)
 
@@ -90,7 +112,8 @@ const createMenuwithVariant = async (id_merchant, request) => {
 				id_category: req.id_category,
 				price: req.price,
 				is_ready: req.is_ready,
-				id_merchant: id_merchant
+				id_merchant: id_merchant,
+				image: filename
 			},
 			select: {
 				name: true
@@ -128,24 +151,62 @@ const createMenuwithVariant = async (id_merchant, request) => {
 	return result
 }
 
-const getList = async (id_merchant) => {
+const getList = async (id_merchant, filterQuery) => {
 	id_merchant = validate(getListMenuValidation, id_merchant)
+
+	const allowedQuery = ['search', 'category']
+	const isValidQuery = Object.keys(filterQuery || {}).every(key => allowedQuery.includes(key))
+
+	if(!isValidQuery){
+		return []
+	}
+
+	const filter = {}
+
+	if(filterQuery.search){
+		filter.search = filterQuery.search.toLowerCase()
+	}
+
+	if(filterQuery.category){
+		filter.category = Number(filterQuery.category)
+	}
 
 	const data = await prismaClient.menu.findMany({
 		where: {
-			id_merchant: id_merchant
+			id_merchant: id_merchant,
+			name: {
+				contains: filter.search
+			},
+			rel_category: {
+				id: filter.category
+			}
 		},
 		select: {
 			id: true,
 			name: true,
-			rel_category: {
+			detail: true,
+			price: true,
+			image: true,
+			is_ready: true,
+			rel_variant:{
 				select: {
-					name: true
+					id: true,
+					name: true,
+					rel_variant_item: {
+						select: {
+							id: true,
+							name: true,
+							price: true
+						}
+					}
 				}
 			},
-			// id_category: true,
-			price: true,
-			is_ready: true
+			rel_category: {
+				select: {
+					id: true,
+					name: true
+				}
+			}
 		}
 	})
 
@@ -156,8 +217,19 @@ const getList = async (id_merchant) => {
 	const list = data.map(item => {
 		const newItem = {
 			...item,
-			category: item.rel_category?.name || null
+			// variants: item.rel_variant ? [{
+			// 	id: item.rel_variant.id,
+			// 	name: item.rel_variant.name,
+			// 	items: item.rel_variant.rel_variant_item || []
+			// }] : [],
+			variants: item.rel_variant.map(v => ({
+				id: v.id,
+				name: v.name,
+				items: v.rel_variant_item || null
+			})) || null,
+			category: item.rel_category || null
 		}
+		delete newItem.rel_variant
 		delete newItem.rel_category
 		return newItem
 	})
@@ -219,13 +291,13 @@ const getCurrentWithVariant = async (id, id_merchant) => {
 	return result
 }
 
-const updateWithVariant = async (id, id_merchant, request) => {
+const updateWithVariant = async (id, id_merchant, filename, request) => {
 	const req = validate(updateMenuWithVariantValidation, request)
 
-	await checkMenu(id, id_merchant)
+	const oldData = await checkMenu(id, id_merchant)
 	await checkCategory(req.id_category)
 
-	const reqVariant = req.variants
+	const reqVariant = req.variants || []
 
 	const result = await prismaClient.$transaction(async (tx) => {
 		await tx.menu.update({
@@ -239,6 +311,7 @@ const updateWithVariant = async (id, id_merchant, request) => {
 				id_category: req.id_category,
 				price: req.price,
 				is_ready: req.is_ready,
+				image: filename,
 				update_at: new Date()
 			},
 			select: {
@@ -347,15 +420,34 @@ const updateWithVariant = async (id, id_merchant, request) => {
 		}
 	})
 
+	if(filename){
+		await deleteImage(id_merchant, oldData.image)
+	}
+
 	return result
 }
 
 const remove = async (id, id_merchant) => {
 	await checkMenu(id, id_merchant)
 
-	return prismaClient.menu.delete({
+	const dataDeleted = await prismaClient.menu.delete({
 		where: {
 			id: id
+		}
+	})
+
+	if(dataDeleted.image){
+		await deleteImage(id_merchant, dataDeleted.image)
+	}
+
+	return dataDeleted
+}
+
+const getCategory = async () => {
+	return prismaClient.category.findMany({
+		select: {
+			id: true,
+			name: true
 		}
 	})
 }
@@ -365,5 +457,6 @@ export default {
 	getList,
 	getCurrentWithVariant,
 	updateWithVariant,
-	remove
+	remove,
+	getCategory
 }

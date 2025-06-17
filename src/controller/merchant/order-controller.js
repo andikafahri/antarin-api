@@ -1,6 +1,6 @@
 import orderService from '../../service/merchant/order-service.js'
 import {logger} from '../../application/logger.js'
-import {io} from '../../application/app.js'
+import {userSocket as io} from '../../application/app.js'
 
 const get = async (req, res, next) => {
 	const filter = {
@@ -28,6 +28,11 @@ const reject = async (req, res, next) => {
 	try{
 		const result = await orderService.reject(filter, req.body)
 
+		setTimeout(() => {
+			const idOrder = req.params.id_order
+			io.to(`orderUser:${idOrder}`).emit('updateStatusOrder', result)
+		}, 3000)
+
 		res.status(200).json({
 			message: 'Pesanan berhasil ditolak'
 		})
@@ -49,8 +54,8 @@ const accept = async (req, res, next) => {
 		setTimeout(() => {
 		// Emit ke client via WebSocket
 			const idOrder = req.params.id_order
-			io.to(idOrder).emit('updateStatusOrder', result)
-			console.log('Order '+idOrder+'updated to id status 2')
+			io.to(`orderUser:${idOrder}`).emit('updateStatusOrder', result)
+			console.log('Order '+idOrder+' updated to id status 2')
 		}, 3000)
 
 		res.status(200).json({
@@ -89,7 +94,7 @@ const finish = async (req, res, next) => {
 
 		setTimeout(() => {
 			const idOrder = req.params.id_order
-			io.to(idOrder).emit('updateStatusOrder', result)
+			io.to(`orderUser:${idOrder}`).emit('updateStatusOrder', result)
 		}, 3000)
 
 		res.status(200).json({

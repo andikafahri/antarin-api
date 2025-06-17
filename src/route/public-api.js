@@ -6,9 +6,14 @@ import merchantController from '../controller/merchant-controller.js'
 import publicHomeController from '../controller/public/home-controller.js'
 import publicMenuController from '../controller/public/menu-controller.js'
 import publicDestinationController from '../controller/public/cost-controller.js'
+import publicProvinceController from '../controller/data-center/province-controller.js'
+import publicCityController from '../controller/data-center/city-controller.js'
+import publicSubdistrictController from '../controller/data-center/subdistrict-controller.js'
+import publicCategoryController from '../controller/data-center/category-controller.js'
 
 const publicRouter = new express.Router()
 const public2Router = new express.Router()
+const publicRouterDataCenter = new express.Router()
 
 // TEST
 publicRouter.get('/api/test', (req, res) => {
@@ -38,7 +43,14 @@ public2Router.get('/merchant/:id_merchant/menu', publicMenuController.getMenuByM
 // SYSTEM COST
 public2Router.post('/system-cost', publicDestinationController.getSystemCost)
 
+// DATA CENTER
+publicRouterDataCenter.get('/province', publicProvinceController.get)
+publicRouterDataCenter.get('/city/:id_province', publicCityController.get)
+publicRouterDataCenter.get('/subdistrict/:id_city', publicSubdistrictController.get)
+publicRouterDataCenter.get('/category', publicCategoryController.get)
+
 export {
 	publicRouter,
-	public2Router
+	public2Router,
+	publicRouterDataCenter
 }

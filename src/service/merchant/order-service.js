@@ -63,7 +63,7 @@ const checkLogMenuUnavailable = async (id_item) => {
 
 const get = async (request) => {
 	const req = validate(getOrderValidation, request)
-
+	
 	const filter = {
 		id_merchant: req.id_merchant,
 		id_status: Number(req.id_status)
@@ -147,10 +147,10 @@ const get = async (request) => {
 			destination: data.destination + ', ' + data.rel_subd.name + ', ' + data.rel_city.name,
 			merchant: data.rel_merchant,
 			courier: {
-				name: data.rel_courier.name,
-				number_plate: data.rel_courier.number_plate,
-				vehicle: data.rel_courier.rel_brand.brand + ' ' + data.rel_courier.rel_brand.name,
-				vehicle_color: data.rel_courier.color
+				name: data?.rel_courier?.name,
+				number_plate: data?.rel_courier?.number_plate,
+				vehicle: data?.rel_courier?.rel_brand.brand + ' ' + data?.rel_courier?.rel_brand.name,
+				vehicle_color: data?.rel_courier?.color
 			},
 			items: data.rel_order_item.map(item => ({
 				id: item.id,
@@ -185,7 +185,7 @@ const reject = async (filter, body) => {
 
 	await checkOrder(req.filter.id_order, req.filter.id_merchant, [1])
 
-	const result = await prismaClient.$transaction(async (tx) => {
+	await prismaClient.$transaction(async (tx) => {
 		await prismaClient.order.update({
 			where: {
 				id: req.filter.id_order,
@@ -216,6 +216,24 @@ const reject = async (filter, body) => {
 			}
 		})
 	})
+
+	// GET STATUS & DATA COURIER FOR UPDATE STATUS ORDER VIA SOCKET
+	const getStatusOrder = await prismaClient.status_order.findUnique({
+		where: {
+			id: 3
+		},
+		select: {
+			id: true,
+			name: true
+		}
+	})
+
+	const result = {
+		status: {
+			id: 5,
+			message: getStatusOrder.name
+		}
+	}
 
 	return result
 }
@@ -505,7 +523,8 @@ const finish = async (ref) => {
 		await tx.order.update({
 			where: {
 				id: ref.id_order,
-				id_merchant: ref.id_merchant
+				id_merchant: ref.id_merchant,
+				id_status: 2
 			},
 			data: {
 				id_status: 5

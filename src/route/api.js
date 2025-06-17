@@ -15,6 +15,7 @@ import orderCourierController from '../controller/courier/order-controller.js'
 import {authUserMiddleware} from '../middleware/auth-user-middleware.js'
 import {authCourierMiddleware} from '../middleware/auth-courier-middleware.js'
 import {authMerchantMiddleware} from '../middleware/auth-merchant-middleware.js'
+import {upload} from '../middleware/upload-middleware.js'
 
 
 
@@ -23,10 +24,12 @@ const userRouter = new express.Router()
 const courierRouter = new express.Router()
 const merchantRouter = new express.Router()
 const menuRouter = new express.Router()
+const categoryRouter = new express.Router()
 // const variantRouter = new express.Router()
 const orderUserRouter = new express.Router()
 const orderMerchantRouter = new express.Router()
 const orderCourierRouter = new express.Router()
+// const imageMerchantRouter = new express.Router()
 
 
 
@@ -35,10 +38,13 @@ userRouter.use(authUserMiddleware)
 courierRouter.use(authCourierMiddleware)
 merchantRouter.use(authMerchantMiddleware)
 menuRouter.use(authMerchantMiddleware)
+categoryRouter.use(authMerchantMiddleware)
 // variantRouter.use(authMerchantMiddleware)
 orderUserRouter.use(authUserMiddleware)
 orderMerchantRouter.use(authMerchantMiddleware)
 orderCourierRouter.use(authCourierMiddleware)
+
+// imageMerchantRouter.use(authMerchantMiddleware)
 
 
 
@@ -58,11 +64,12 @@ merchantRouter.patch('/', merchantController.update)
 merchantRouter.put('/change_password', merchantController.updatePassword)
 
 // MENU
-menuRouter.post('/', menuController.createwithVariant)
+menuRouter.post('/', upload.single('image'), menuController.createwithVariant)
 menuRouter.get('/', menuController.getList)
 menuRouter.get('/:id', menuController.getCurrentWithVariant)
-menuRouter.put('/:id', menuController.updateWithVariant)
+menuRouter.put('/:id', upload.single('image'), menuController.updateWithVariant)
 menuRouter.delete('/:id', menuController.remove)
+categoryRouter.get('/', menuController.getCategory)
 
 // VARIAN
 // variantRouter.post('/:id_menu', variantController.create)
@@ -87,13 +94,18 @@ orderCourierRouter.post('/deliver', orderCourierController.deliver)
 orderCourierRouter.post('/delivered', orderCourierController.delivered)
 orderCourierRouter.post('/finish', orderCourierController.finish)
 
+// IMAGE
+// imageMerchantRouter.get('/', merchantController.getImage)
+
 export {
 	userRouter,
 	courierRouter,
 	merchantRouter,
 	menuRouter,
+	categoryRouter,
 	// variantRouter
 	orderUserRouter,
 	orderMerchantRouter,
 	orderCourierRouter
+	// imageMerchantRouter
 }

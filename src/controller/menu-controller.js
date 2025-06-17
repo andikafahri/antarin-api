@@ -12,10 +12,13 @@ import menuService from '../service/menu-service.js'
 // }
 
 const createwithVariant = async (req, res, next) => {
+	const request = {...req.body, variants: JSON.parse(req.body.variants || '[]')}
+
 	try{
-		const result = await menuService.createMenuwithVariant(req.merchant.id, req.body)
+		const result = await menuService.createMenuwithVariant(req.merchant.id, req.filename, request)
 		res.status(200).json({
 			message: 'Tambah menu sukses'
+			// result
 		})
 	}catch(e){
 		next(e)
@@ -24,7 +27,7 @@ const createwithVariant = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
 	try{
-		const result = await menuService.getList(req.merchant.id)
+		const result = await menuService.getList(req.merchant.id, req.query)
 		res.status(200).json({
 			data: result
 		})
@@ -67,8 +70,10 @@ const getCurrentWithVariant = async (req, res, next) => {
 // }
 
 const updateWithVariant = async (req, res, next) => {
+	const request = {...req.body, variants: JSON.parse(req.body.variants || '[]')}
+
 	try{
-		const result = await menuService.updateWithVariant(req.params.id, req.merchant.id, req.body)
+		const result = await menuService.updateWithVariant(req.params.id, req.merchant.id, req.filename, request)
 		res.status(200).json({
 			message: 'Edit sukses'
 		})
@@ -80,8 +85,20 @@ const updateWithVariant = async (req, res, next) => {
 const remove = async (req, res, next) => {
 	try{
 		const result = await menuService.remove(req.params.id, req.merchant.id)
+
 		res.status(200).json({
 			message: 'Hapus sukses'
+		})
+	}catch(e){
+		next(e)
+	}
+}
+
+const getCategory = async (req, res, next) => {
+	try{
+		const result = await menuService.getCategory()
+		res.status(200).json({
+			data: result
 		})
 	}catch(e){
 		next(e)
@@ -96,5 +113,6 @@ export default {
 	getCurrentWithVariant,
 	// update,
 	updateWithVariant,
-	remove
+	remove,
+	getCategory
 }

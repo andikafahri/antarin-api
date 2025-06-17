@@ -1,4 +1,5 @@
 import orderService from '../../service/user/order-service.js'
+import {merchantSocket as io} from '../../application/app.js'
 
 const create = async (req, res, next) => {
 	const ref = {
@@ -8,6 +9,12 @@ const create = async (req, res, next) => {
 
 	try{
 		const result = await orderService.create(ref, req.body)
+
+		setTimeout(() => {
+			io.to(`orderMerchant:${ref.id_merchant}`).emit('updateNewOrder', result)
+			console.log('Order updated: '+ref.id_merchant)
+		}, 3000)
+
 		res.status(200).json({
 			message: 'Order sukses'
 		})

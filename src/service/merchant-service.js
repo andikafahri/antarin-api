@@ -67,7 +67,8 @@ const login = async (request) => {
 	}
 
 	const payload = {
-		id: findMerchant.id
+		id: findMerchant.id,
+		role: 'merchant'
 	}
 
 	const token = jwt.sign(payload, process.env.JWT_SECRET_MERCHANT, {
@@ -90,16 +91,19 @@ const get = async (id) => {
 			address: true,
 			rel_subd: {
 				select: {
+					id: true,
 					name: true
 				}
 			},
 			rel_city: {
 				select: {
+					id: true,
 					name: true
 				}
 			},
 			rel_prov: {
 				select: {
+					id: true,
 					name: true
 				}
 			},
@@ -107,6 +111,7 @@ const get = async (id) => {
 			phone: true,
 			rel_status: {
 				select: {
+					id: true,
 					name: true
 				}
 			}
@@ -119,10 +124,10 @@ const get = async (id) => {
 
 	const merchant = {
 		...data,
-		subd: data.rel_subd.name,
-		city: data.rel_city.name,
-		prov: data.rel_prov.name,
-		status: data.rel_status.name
+		subd: data.rel_subd,
+		city: data.rel_city,
+		prov: data.rel_prov,
+		status: data.rel_status
 	}
 
 	delete merchant.rel_subd
@@ -168,9 +173,19 @@ const update = async (id, request) => {
 		data.email = req.email
 	}
 
-	if(req.phone){
+	if(req.phone || req.phone === ''){
 		data.phone = req.phone
 	}
+
+	// Mengecek apakah properti phone benar-benar ada di dalam objek req, meskipun nilainya undefined atau kosong string ('')
+	// if('phone' in req){
+	// 	console.log('PHONE: '+req.phone)
+	// 	if(req.phone === ''){
+	// 		data.phone = null
+	// 	}else{
+	// 		data.phone = req.phone
+	// 	}
+	// }
 
 	return prismaClient.merchant.update({
 		where: {
