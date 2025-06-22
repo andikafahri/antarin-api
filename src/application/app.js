@@ -58,11 +58,11 @@ authSocketUser(userSocket)
 authSocketMerchant(merchantSocket)
 
 app.use(cors({
-	origin: 'https://antarin-web.vercel.app',
-	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization'],
-	credentials: true
-}));
+	origin: ['https://antarin-web.vercel.app', 'https://antarin.free.nf', 'http://antarin.free.nf'],
+		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
+		credentials: true
+	}));
 
 
 
