@@ -89,7 +89,7 @@ const createOrderValidation = Joi.object({
 	})
 })
 
-const cancelOrderValidation = idOrderSchema.required()
+const cancelOrderValidation = idUserSchema.required()
 
 const getOrderValidation = idUserSchema.required()
 

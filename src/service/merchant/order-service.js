@@ -29,6 +29,94 @@ const checkOrder = async (id_order, id_merchant, id_status) => {
 	}
 }
 
+const getDataOrderForHistory = async (id_order, id_merchant) => {
+	const data = await prismaClient.order.findFirst({
+		where: {
+			id: id_order,
+			id_merchant: id_merchant
+		},
+		select: {
+			id: true,
+			destination: true,
+			shipping_cost: true,
+			service_cost: true,
+			rel_user: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_merchant: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_courier: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_subd: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_city: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_prov: {
+				select: {
+					id: true,
+					name: true
+				}
+			}
+		}
+	})
+
+	const result = {
+		...data,
+		id_user: data.rel_user.id,
+		name_user: data.rel_user.name,
+		id_merchant: data.rel_merchant.id,
+		name_merchant: data.rel_merchant.name,
+		id_courier: data.rel_courier?.id,
+		name_courier: data.rel_courier?.name,
+		id_subd: data.rel_subd.id,
+		name_subd: data.rel_subd.name,
+		id_city: data.rel_city.id,
+		name_city: data.rel_city.name,
+		id_prov: data.rel_prov.id,
+		name_prov: data.rel_prov.name
+	}
+
+	delete result.rel_user
+	delete result.rel_merchant
+	delete result.rel_courier
+	delete result.rel_subd
+	delete result.rel_city
+	delete result.rel_prov
+
+	return result
+}
+
+const getDataOrderItemForHistory = async (id_order) => {
+	const data = await prismaClient.order_item.findMany({
+		where: {
+			id_order: id_order
+		}
+	})
+
+	const {created_at, update_at, ...result} = data
+
+	return result
+}
+
 const checkItem = async (id_item, id_order) => {
 	const result = await prismaClient.order_item.findFirst({
 		where: {
@@ -180,7 +268,7 @@ const get = async (request) => {
 	return results
 }
 
-const reject = async (filter, body) => {
+const reject_OLD = async (filter, body) => {
 	const req = validate(decisionValidation, {filter:filter, body:body})
 
 	await checkOrder(req.filter.id_order, req.filter.id_merchant, [1])
@@ -202,6 +290,78 @@ const reject = async (filter, body) => {
 		})
 
 		await prismaClient.log_order.create({
+			data: {
+				id: uniqid(),
+				id_order: req.filter.id_order,
+				id_status: 3,
+				detail_status: '',
+				change_by: 'Merchant',
+				id_changer: req.filter.id_merchant,
+				time: new Date()
+			},
+			select: {
+				id: true
+			}
+		})
+	})
+
+	// GET STATUS & DATA COURIER FOR UPDATE STATUS ORDER VIA SOCKET
+	const getStatusOrder = await prismaClient.status_order.findUnique({
+		where: {
+			id: 3
+		},
+		select: {
+			id: true,
+			name: true
+		}
+	})
+
+	const result = {
+		status: {
+			id: 5,
+			message: getStatusOrder.name
+		}
+	}
+
+	return result
+}
+
+const reject = async (filter, body) => {
+	const req = validate(decisionValidation, {filter:filter, body:body})
+
+	await checkOrder(req.filter.id_order, req.filter.id_merchant, [1])
+
+	const dataOrder = await getDataOrderForHistory(filter.id_order, filter.id_merchant)
+	dataOrder.created_at = new Date()
+
+	const dataOrderItem = await getDataOrderItemForHistory(filter.id_order)
+
+	await prismaClient.$transaction(async (tx) => {
+		await tx.history_order.create({
+			data: dataOrder
+		})
+
+		await tx.history_order_item.createMany({
+			data: Object.values(dataOrderItem).map(item => ({
+				...item,
+				created_at: new Date()
+			}))
+		})
+
+		await tx.order_item.deleteMany({
+			where: {
+				id_order: filter.id_order
+			}
+		})
+
+		await tx.order.delete({
+			where: {
+				id: req.filter.id_order,
+				id_merchant: req.filter.id_merchant
+			}
+		})
+
+		await tx.log_order.create({
 			data: {
 				id: uniqid(),
 				id_order: req.filter.id_order,

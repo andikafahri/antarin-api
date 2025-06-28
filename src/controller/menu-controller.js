@@ -12,7 +12,21 @@ import menuService from '../service/menu-service.js'
 // }
 
 const createwithVariant = async (req, res, next) => {
-	const request = {...req.body, variants: JSON.parse(req.body.variants || '[]')}
+	// res.status(200).json({
+	// 	data: {
+	// 		body: req.body,
+	// 		variants: req.body.variants ? JSON.parse(req.body.variants) : []
+	// 	}
+	// })
+
+	// if(req.is('multipart/form-data')){
+	// 	const data = JSON.parse(req.body.reduce((acc, [key, val]) => ({...acc, [key]: val}), {}))
+	// 	const request = {...data, variants: data.variants ? JSON.parse(data.variants) : []}
+	// }else{
+	// 	const request = {...req.body, variants: req.body.variants ? JSON.parse(req.body.variants) : []}
+	// }
+
+	const request = {...req.body, variants: req.body.variants ? JSON.parse(req.body.variants) : []}
 
 	try{
 		const result = await menuService.createMenuwithVariant(req.merchant.id, req.filename, request)

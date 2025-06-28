@@ -25,7 +25,8 @@ const create = async (req, res, next) => {
 
 const cancel = async (req, res, next) => {
 	try{
-		const result = await orderService.cancel(req.user.id, req.params.id_order)
+		// const result = await orderService.cancel(req.user.id, req.params.id_order)
+		const result = await orderService.cancel(req.user.id)
 		res.status(200).json({
 			message: 'Order berhasil dibatalkan'
 		})

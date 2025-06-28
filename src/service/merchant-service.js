@@ -89,6 +89,7 @@ const get = async (id) => {
 			username: true,
 			name: true,
 			address: true,
+			image: true,
 			rel_subd: {
 				select: {
 					id: true,

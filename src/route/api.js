@@ -3,6 +3,7 @@ import express from 'express'
 import userController from '../controller/user/user-controller.js'
 import courierController from '../controller/courier-controller.js'
 import merchantController from '../controller/merchant-controller.js'
+import timeOperationalController from '../controller/merchant/time-operational-controller.js'
 import menuController from '../controller/menu-controller.js'
 // import variantController from '../controller/variant-controller.js'
 import orderUserController from '../controller/user/order-controller.js'
@@ -63,6 +64,13 @@ merchantRouter.get('/', merchantController.get)
 merchantRouter.patch('/', merchantController.update)
 merchantRouter.put('/change_password', merchantController.updatePassword)
 
+// TIME OPERATIONAL
+merchantRouter.get('/timeoperational', timeOperationalController.getTime)
+merchantRouter.post('/timeoperational', timeOperationalController.addTime)
+merchantRouter.put('/timeoperational/:id', timeOperationalController.updateTime)
+merchantRouter.delete('/timeoperational/:id', timeOperationalController.deleteTime)
+merchantRouter.post('/timeoperational/changemode/:mode', timeOperationalController.changeMode)
+
 // MENU
 menuRouter.post('/', upload.single('image'), menuController.createwithVariant)
 menuRouter.get('/', menuController.getList)
@@ -75,8 +83,9 @@ categoryRouter.get('/', menuController.getCategory)
 // variantRouter.post('/:id_menu', variantController.create)
 
 // ORDER USER
-orderUserRouter.post('/:id_merchant', orderUserController.create)
-orderUserRouter.post('/cancel/:id_order', orderUserController.cancel)
+orderUserRouter.post('/create/:id_merchant', orderUserController.create)
+// orderUserRouter.post('/cancel/:id_order', orderUserController.cancel)
+orderUserRouter.post('/cancel', orderUserController.cancel)
 orderUserRouter.get('/', orderUserController.get)
 orderUserRouter.get('/unavailable', orderUserController.getUnavailable)
 orderUserRouter.put('/unavailable/confirm', orderUserController.confirm)

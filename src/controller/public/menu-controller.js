@@ -12,6 +12,18 @@ const getCurrentMerchant = async (req, res, next) => {
 	}
 }
 
+const getTime = async (req, res, next) => {
+	try{
+		const result = await menuService.getTime(req.params.id_merchant)
+
+		res.status(200).json({
+			data: result
+		})
+	}catch(e){
+		next(e)
+	}
+}
+
 const getMenuByMerchant = async (req, res, next) => {
 	try{
 		const result = await menuService.getMenuByMerchant(req.params.id_merchant, req.query)
@@ -26,5 +38,6 @@ const getMenuByMerchant = async (req, res, next) => {
 
 export default {
 	getCurrentMerchant,
-	getMenuByMerchant
+	getMenuByMerchant,
+	getTime
 }

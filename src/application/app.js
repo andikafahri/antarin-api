@@ -9,7 +9,8 @@ import fs from 'fs'
 import {
 	publicRouter,
 	public2Router,
-	publicRouterDataCenter
+	publicRouterDataCenter,
+	publicRouterScheduleJob
 } from '../route/public-api.js'
 import {
 	userRouter,
@@ -58,7 +59,8 @@ authSocketUser(userSocket)
 authSocketMerchant(merchantSocket)
 
 app.use(cors({
-	origin: ['https://antarin-web.vercel.app', 'https://antarin.free.nf', 'http://antarin.free.nf'],
+	// origin: ['https://antarin-web.vercel.app', 'https://antarin.free.nf', 'http://antarin.free.nf'],
+	origin: ['http://192.168.43.226:5173', 'http://localhost:5173', 'http://localhost:8080'],
 		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 		allowedHeaders: ['Content-Type', 'Authorization'],
 		credentials: true
@@ -116,6 +118,9 @@ app.use('/api/courier/order', orderCourierRouter)
 
 // DATA CENTER
 app.use('/api/datacenter', publicRouterDataCenter)
+
+// SCHEDULE JOB
+app.use('/api/autoaction', publicRouterScheduleJob)
 
 // IMAGE
 // app.use('/img/merchant', imageMerchantRouter)

@@ -10,10 +10,12 @@ import publicProvinceController from '../controller/data-center/province-control
 import publicCityController from '../controller/data-center/city-controller.js'
 import publicSubdistrictController from '../controller/data-center/subdistrict-controller.js'
 import publicCategoryController from '../controller/data-center/category-controller.js'
+import publicTimeOperationalController from '../controller/merchant/time-operational-controller.js'
 
 const publicRouter = new express.Router()
 const public2Router = new express.Router()
 const publicRouterDataCenter = new express.Router()
+const publicRouterScheduleJob = new express.Router()
 
 // TEST
 publicRouter.get('/api/test', (req, res) => {
@@ -38,6 +40,7 @@ public2Router.get('/home/merchant/list', publicHomeController.getList)
 
 // CURRENT
 public2Router.get('/merchant/:id_merchant', publicMenuController.getCurrentMerchant)
+public2Router.get('/timeoperational', publicMenuController.getTime)
 public2Router.get('/merchant/:id_merchant/menu', publicMenuController.getMenuByMerchant)
 
 // SYSTEM COST
@@ -49,8 +52,12 @@ publicRouterDataCenter.get('/city/:id_province', publicCityController.get)
 publicRouterDataCenter.get('/subdistrict/:id_city', publicSubdistrictController.get)
 publicRouterDataCenter.get('/category', publicCategoryController.get)
 
+// SCHEDULE JOB
+publicRouterScheduleJob.post('/timeoperational', publicTimeOperationalController.autoUpdate)
+
 export {
 	publicRouter,
 	public2Router,
-	publicRouterDataCenter
+	publicRouterDataCenter,
+	publicRouterScheduleJob
 }

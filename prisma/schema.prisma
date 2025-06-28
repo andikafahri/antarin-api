@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
 	provider = "prisma-client-js"
-	// output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -14,342 +7,328 @@ datasource db {
 	url      = env("DATABASE_URL")
 }
 
-model Status {
-	id Int @id @default(autoincrement())
-	name String @db.VarChar(20)
-	created_at DateTime @default(now())
-	update_at DateTime?
-
-	rel_user User[]
-	rel_courier Courier[]
-	rel_merchant Merchant[]
-
-	@@map("status")
+model brand {
+	id         Int       @id @default(autoincrement())
+	name       String    @db.VarChar(50)
+	brand      String    @db.VarChar(20)
+	created_at DateTime  @default(now())
+	update_at  DateTime?
+	rel_courier    courier[]
 }
 
-model Status_order {
-	id Int @id @default(autoincrement())
-	name String @db.VarChar(50)
-	created_at DateTime @default(now())
-	update_at DateTime?
-
-	rel_order Order[]
-	rel_log_order Log_order[]
-
-	@@map("status_order")
+model category {
+	id         Int       @id @default(autoincrement())
+	name       String    @db.VarChar(50)
+	created_at DateTime  @default(now())
+	update_at  DateTime?
+	rel_menu       menu[]
 }
 
-model Brand {
-	id Int @id @default(autoincrement())
-	name String @db.VarChar(50)
-	brand String @db.VarChar(20)
-	created_at DateTime @default(now())
-	update_at DateTime?
-
-	rel_courier Courier[]
-
-	@@map("brand")
+model city {
+	id         Int        @id @default(autoincrement())
+	name       String     @db.VarChar(50)
+	id_prov    Int
+	created_at DateTime   @default(now())
+	update_at  DateTime?
+	rel_merchant   merchant[]
+	rel_order      order[]
 }
 
-model Subdistrict {
-	id Int @id @default(autoincrement())
-	name String @db.VarChar(50)
-	id_city Int
-	created_at DateTime @default(now())
-	update_at DateTime?
+model courier {
+	id           String    @id @db.VarChar(100)
+	username     String    @unique @db.VarChar(100)
+	password     String    @db.VarChar(200)
+	name         String    @db.VarChar(100)
+	email        String    @db.VarChar(100)
+	phone        String?   @db.VarChar(20)
+	number_plate String    @db.VarChar(20)
+	id_brand     Int
+	color        String    @db.VarChar(30)
+	is_active    Boolean   @default(false)
+	id_status    Int
+	created_at   DateTime  @default(now())
+	update_at    DateTime?
+	image        String?   @db.VarChar(100)
+	rel_brand        brand     @relation(fields: [id_brand], references: [id])
+	rel_status       status    @relation(fields: [id_status], references: [id])
+	rel_order        order[]
 
-	rel_merchant Merchant[]
-	rel_order Order[]
-
-	@@map("subdistrict")
+	@@index([id_brand], map: "courier_id_brand_fkey")
+	@@index([id_status], map: "courier_id_status_fkey")
 }
 
-model City {
-	id Int @id @default(autoincrement())
-	name String @db.VarChar(50)
-	id_prov Int
-	created_at DateTime @default(now())
-	update_at DateTime?
-
-	rel_merchant Merchant[]
-	rel_order Order[]
-
-	@@map("city")
+model history_order {
+	id                 String               @id @db.VarChar(100)
+	id_user            String               @db.VarChar(100)
+	name_user          String               @db.VarChar(100)
+	id_merchant        String               @db.VarChar(100)
+	name_merchant      String               @db.VarChar(100)
+	id_courier         String?              @db.VarChar(100)
+	name_courier       String?              @db.VarChar(100)
+	destination        String               @db.VarChar(200)
+	shipping_cost      Decimal              @db.Decimal(10, 2)
+	created_at         DateTime             @default(now())
+	update_at          DateTime?
+	id_city            Int
+	id_prov            Int
+	id_subd            Int
+	name_city          String               @db.VarChar(50)
+	name_prov          String               @db.VarChar(50)
+	name_subd          String               @db.VarChar(50)
+	service_cost       Decimal              @db.Decimal(10, 2)
+	rel_history_order_item history_order_item[]
 }
 
-model Province {
-	id Int @id @default(autoincrement())
-	name String @db.VarChar(50)
-	created_at DateTime @default(now())
-	update_at DateTime?
+model history_order_item {
+	id            String        @id @db.VarChar(100)
+	id_menu       String        @db.VarChar(100)
+	name_menu     String        @db.VarChar(100)
+	id_variant    String        @db.VarChar(100)
+	name_variant  String        @db.VarChar(50)
+	qty           Int
+	note          String?       @db.VarChar(300)
+	id_order      String        @db.VarChar(100)
+	created_at    DateTime      @default(now())
+	update_at     DateTime?
+	price_menu    Decimal       @db.Decimal(10, 2)
+	price_variant Decimal       @db.Decimal(10, 2)
+	image         String        @db.VarChar(100)
+	rel_history_order history_order @relation(fields: [id_order], references: [id])
 
-	rel_merchant Merchant[]
-	rel_order Order[]
-
-	@@map("province")
+	@@index([id_order], map: "history_order_item_id_order_fkey")
 }
 
-model Category {
-	id Int @id @default(autoincrement())
-	name String @db.VarChar(50)
-	created_at DateTime @default(now())
-	update_at DateTime?
+model log_menu_unavailable {
+	id                  String    @id @db.VarChar(100)
+	id_log_order        String    @db.VarChar(100)
+	id_item             String    @db.VarChar(100)
+	name_menu           String    @db.VarChar(100)
+	id_variant          String    @db.VarChar(100)
+	name_variant        String    @db.VarChar(50)
+	price_menu          Decimal   @db.Decimal(10, 2)
+	price_variant       Decimal   @db.Decimal(10, 2)
+	note                String?   @db.VarChar(200)
+	change_by           String    @db.VarChar(50)
+	id_changer          String    @db.VarChar(100)
+	time                DateTime  @default(now())
+	qty                 Int
+	available_qty       Int
+	unavailable_menu    Boolean   @default(false)
+	unavailable_variant Boolean   @default(false)
+	id_menu             String    @db.VarChar(100)
+	is_confirm          Boolean   @default(false)
+	image               String?   @db.VarChar(100)
+	rel_log_order           log_order @relation(fields: [id_log_order], references: [id])
 
-	rel_menu Menu[]
-
-	@@map("category")
+	@@index([id_log_order], map: "log_menu_unavailable_id_log_order_fkey")
 }
 
-model User {
-	id String @id @db.VarChar(100)
-	username String @unique @db.VarChar(100)
-	password String @db.VarChar(200)
-	name String @db.VarChar(100)
-	email String @db.VarChar(100)
-	phone String? @db.VarChar(20)
-	poin Int
-	image String? @db.VarChar(100)
-	id_status Int
-	created_at DateTime @default(now())
-	update_at DateTime?
+model log_order {
+	id                   String                 @id @db.VarChar(100)
+	id_order             String                 @db.VarChar(100)
+	id_status            Int
+	detail_status        String?                @db.VarChar(200)
+	change_by            String                 @db.VarChar(50)
+	id_changer           String                 @db.VarChar(100)
+	time                 DateTime               @default(now())
+	rel_log_menu_unavailable log_menu_unavailable[]
+	rel_status         status_order           @relation(fields: [id_status], references: [id])
 
-	rel_order Order[]
-
-	rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-	@@map("user")
+	@@index([id_status], map: "log_order_id_status_fkey")
 }
 
-model Courier {
-	id String @id @db.VarChar(100)
-	username String @unique @db.VarChar(100)
-	password String @db.VarChar(200)
-	name String @db.VarChar(100)
-	email String @db.VarChar(100)
-	phone String? @db.VarChar(20)
-	number_plate String @db.VarChar(20)
-	id_brand Int
-	color String @db.VarChar(30)
-	image String? @db.VarChar(100)
-	is_active Boolean @default(false)
-	id_status Int
-	created_at DateTime @default(now())
-	update_at DateTime?
-
-	rel_order Order[]
-
-	rel_brand Brand @relation(fields: [id_brand], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-	@@map("courier")
-}
-
-model Merchant {
-	id String @id @db.VarChar(100)
-	username String @unique @db.VarChar(100)
-	password String @db.VarChar(200)
-	name String @db.VarChar(100)
-	address String @db.VarChar(200)
-	id_subd Int
-	id_city Int
-	id_prov Int
-	email String @db.VarChar(100)
-	phone String? @db.VarChar(20)
-	image String? @db.VarChar(100)
-	is_open Boolean @default(false)
-	id_status Int
-	created_at DateTime @default(now())
-	update_at DateTime?
-
-	rel_menu Menu[]
-	rel_order Order[]
-
-	rel_subd Subdistrict @relation(fields: [id_subd], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_city City @relation(fields: [id_city], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_prov Province @relation(fields: [id_prov], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_status Status @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-	@@map("merchant")
-}
-
-model Menu {
-	id String @id @db.VarChar(100)
-	name String @db.VarChar(100)
-	detail String? @db.VarChar(300)
-	id_merchant String @db.VarChar(100)
+model menu {
+	id          String    @id @db.VarChar(100)
+	name        String    @db.VarChar(100)
+	detail      String?   @db.VarChar(300)
 	id_category Int
-	price Decimal @db.Decimal(10,2)
-	image String? @db.VarChar(100)
-	is_ready Boolean @default(true)
-	created_at DateTime @default(now())
-	update_at DateTime?
+	price       Decimal   @db.Decimal(10, 2)
+	is_ready    Boolean   @default(true)
+	created_at  DateTime  @default(now())
+	update_at   DateTime?
+	id_merchant String    @db.VarChar(100)
+	image       String    @db.VarChar(100)
+	rel_category    category  @relation(fields: [id_category], references: [id])
+	rel_merchant    merchant  @relation(fields: [id_merchant], references: [id], onDelete: Cascade)
+	rel_variant     variant[]
 
-	rel_variant Variant[]
-
-	rel_merchant Merchant @relation(fields: [id_merchant], references: [id], onDelete: Cascade, onUpdate: Cascade)
-	rel_category Category @relation(fields: [id_category], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-	@@map("menu")
+	@@index([id_category], map: "menu_id_category_fkey")
+	@@index([id_merchant], map: "menu_id_merchant_fkey")
 }
 
-model Variant {
-	id String @id @db.VarChar(100)
-	name String @db.VarChar(50)
-	id_menu String @db.VarChar(100)
-	created_at DateTime @default(now())
-	update_at DateTime?
+model merchant {
+	id          String      @id @db.VarChar(100)
+	username    String      @unique @db.VarChar(100)
+	password    String      @db.VarChar(200)
+	name        String      @db.VarChar(100)
+	address     String      @db.VarChar(200)
+	id_subd     Int
+	id_city     Int
+	id_prov     Int
+	email       String      @db.VarChar(100)
+	phone       String?     @db.VarChar(20)
+	is_open     Boolean     @default(false)
+	is_open_mode String @default("auto") @db.VarChar(10)
+	id_status   Int
+	created_at  DateTime    @default(now())
+	update_at   DateTime?
+	image       String?     @db.VarChar(100)
+	rel_menu        menu[]
+	rel_city        city        @relation(fields: [id_city], references: [id])
+	rel_prov    province    @relation(fields: [id_prov], references: [id])
+	rel_status      status      @relation(fields: [id_status], references: [id])
+	rel_subd subdistrict @relation(fields: [id_subd], references: [id])
+	rel_order       order[]
+	rel_time_operational time_operational[]
 
-	rel_variant_item Variant_item[]
-
-	rel_menu Menu @relation(fields: [id_menu], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-	@@map("variant")
+	@@index([id_city], map: "merchant_id_city_fkey")
+	@@index([id_prov], map: "merchant_id_prov_fkey")
+	@@index([id_status], map: "merchant_id_status_fkey")
+	@@index([id_subd], map: "merchant_id_subd_fkey")
 }
 
-model Variant_item {
-	id String @id @db.VarChar(100)
-	name String @db.VarChar(50)
-	id_variant String @db.VarChar(100)
-	price Decimal @db.Decimal(10,2)
-	is_ready Boolean @default(true)
-	created_at DateTime @default(now())
-	update_at DateTime?
+model order {
+	id            String       @id @db.VarChar(100)
+	id_user       String       @db.VarChar(100)
+	id_merchant   String       @db.VarChar(100)
+	id_courier    String?      @db.VarChar(100)
+	destination   String       @db.VarChar(200)
+	shipping_cost Decimal      @db.Decimal(10, 2)
+	created_at    DateTime     @default(now())
+	update_at     DateTime?
+	id_city       Int
+	id_prov       Int
+	id_subd       Int
+	id_status     Int
+	service_cost  Decimal      @db.Decimal(10, 2)
+	rel_city          city         @relation(fields: [id_city], references: [id])
+	rel_courier       courier?     @relation(fields: [id_courier], references: [id], onDelete: Restrict)
+	rel_merchant      merchant     @relation(fields: [id_merchant], references: [id])
+	rel_prov      province     @relation(fields: [id_prov], references: [id])
+	rel_status  status_order @relation(fields: [id_status], references: [id])
+	rel_subd   subdistrict  @relation(fields: [id_subd], references: [id])
+	rel_user          user         @relation(fields: [id_user], references: [id])
+	rel_order_item    order_item[]
 
-	rel_variant Variant @relation(fields: [id_variant], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-	@@map("variant_item")
+	@@index([id_city], map: "order_id_city_fkey")
+	@@index([id_courier], map: "order_id_courier_fkey")
+	@@index([id_merchant], map: "order_id_merchant_fkey")
+	@@index([id_prov], map: "order_id_prov_fkey")
+	@@index([id_status], map: "order_id_status_fkey")
+	@@index([id_subd], map: "order_id_subd_fkey")
+	@@index([id_user], map: "order_id_user_fkey")
 }
 
-model Order {
-	id String @id @db.VarChar(100)
-	id_user String @db.VarChar(100)
+model time_operational {
+	id Int @id @default(autoincrement())
 	id_merchant String @db.VarChar(100)
-	id_courier String? @db.VarChar(100)
-	destination String @db.VarChar(200)
-	id_subd Int
-	id_city Int
-	id_prov Int
-	shipping_cost Decimal @db.Decimal(10,2)
-	service_cost Decimal @db.Decimal(10,2)
-	id_status Int
+	day Int
+	start_time String @db.VarChar(5)
+	end_time String @db.VarChar(5)
 	created_at DateTime @default(now())
 	update_at DateTime?
 
-	rel_order_item Order_item[]
+	rel_merchant merchant @relation(fields: [id_merchant], references: [id])
 
-	rel_user User @relation(fields: [id_user], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_merchant Merchant @relation(fields: [id_merchant], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_courier Courier? @relation(fields: [id_courier], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_subd Subdistrict @relation(fields: [id_subd], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_city City @relation(fields: [id_city], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_prov Province @relation(fields: [id_prov], references: [id], onDelete: Restrict, onUpdate: Cascade)
-	rel_status Status_order @relation(fields: [id_status], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-	@@map("order")
+	@@index([id_merchant], map: "time_operational_id_merchant_fkey")
 }
 
-model Order_item {
-	id String @id @db.VarChar(100)
-	id_menu String @db.VarChar(100)
-	name_menu String @db.VarChar(100)
-	id_variant String @db.VarChar(100)
-	name_variant String @db.VarChar(50)
-	qty Int
-	note String? @db.VarChar(300)
-	price_menu Decimal @db.Decimal(10,2)
-	price_variant Decimal @db.Decimal(10,2)
-	image String? @db.VarChar(100)
-	id_order String @db.VarChar(100)
-	created_at DateTime @default(now())
-	update_at DateTime?
+model order_item {
+	id            String    @id @db.VarChar(100)
+	id_menu       String    @db.VarChar(100)
+	name_menu     String    @db.VarChar(100)
+	id_variant    String    @db.VarChar(100)
+	qty           Int
+	note          String?   @db.VarChar(300)
+	id_order      String    @db.VarChar(100)
+	created_at    DateTime  @default(now())
+	update_at     DateTime?
+	name_variant  String    @db.VarChar(50)
+	price_menu    Decimal   @db.Decimal(10, 2)
+	price_variant Decimal   @db.Decimal(10, 2)
+	image         String    @db.VarChar(100)
+	rel_order         order     @relation(fields: [id_order], references: [id])
 
-	rel_order Order @relation(fields: [id_order], references: [id])
-
-	@@map("order_item")
+	@@index([id_order], map: "order_item_id_order_fkey")
 }
 
-model Log_order {
-	id String @id @db.VarChar(100)
-	id_order String @db.VarChar(100)
-	id_status Int
-	detail_status String? @db.VarChar(200)
-	change_by String @db.VarChar(50)
-	id_changer String @db.VarChar(100)
-	time DateTime @default(now())
-
-	rel_log_menu_unavailable Log_menu_unavailable[]
-
-	rel_status Status_order @relation(fields: [id_status], references: [id])
-
-	@@map("log_order")
+model province {
+	id         Int        @id @default(autoincrement())
+	name       String     @db.VarChar(50)
+	created_at DateTime   @default(now())
+	update_at  DateTime?
+	rel_merchant   merchant[]
+	rel_order      order[]
 }
 
-model Log_menu_unavailable {
-	id String @id @db.VarChar(100)
-	id_log_order String @db.VarChar(100)
-	id_item String @db.VarChar(100)
-	id_menu String @db.VarChar(100)
-	name_menu String @db.VarChar(100)
-	id_variant String @db.VarChar(100)
-	name_variant String @db.VarChar(50)
-	price_menu Decimal @db.Decimal(10,2)
-	price_variant Decimal @db.Decimal(10,2)
-	qty Int
-	unavailable_menu Boolean @default(false)
-	unavailable_variant Boolean @default(false)
-	available_qty Int
-	note String? @db.VarChar(200)
-	image String? @db.VarChar(100)
-	is_confirm Boolean @default(false)
-	change_by String @db.VarChar(50)
-	id_changer String @db.VarChar(100)
-	time DateTime @default(now())
-
-	rel_log_order Log_order @relation(fields: [id_log_order], references: [id])
-
-	@@map("log_menu_unavailable")
+model status {
+	id         Int        @id @default(autoincrement())
+	name       String     @db.VarChar(20)
+	created_at DateTime   @default(now())
+	update_at  DateTime?
+	rel_courier    courier[]
+	rel_merchant   merchant[]
+	rel_user       user[]
 }
 
-model History_order {
-	id String @id @db.VarChar(100)
-	id_user String @db.VarChar(100)
-	name_user String @db.VarChar(100)
-	id_merchant String @db.VarChar(100)
-	name_merchant String @db.VarChar(100)
-	id_courier String @db.VarChar(100)
-	name_courier String @db.VarChar(100)
-	destination String @db.VarChar(200)
-	id_subd Int
-	name_subd String @db.VarChar(50)
-	id_city Int
-	name_city String @db.VarChar(50)
-	id_prov Int
-	name_prov String @db.VarChar(50)
-	shipping_cost Decimal @db.Decimal(10,2)
-	service_cost Decimal @db.Decimal(10,2)
-	created_at DateTime @default(now())
-	update_at DateTime?
-
-	rel_history_order_item History_order_item[]
-
-	@@map("history_order")
+model status_order {
+	id         Int         @id @default(autoincrement())
+	name       String      @db.VarChar(50)
+	created_at DateTime    @default(now())
+	update_at  DateTime?
+	rel_log_order  log_order[]
+	rel_order      order[]
 }
 
-model History_order_item {
-	id String @id @db.VarChar(100)
-	id_menu String @db.VarChar(100)
-	name_menu String @db.VarChar(100)
-	id_variant String @db.VarChar(100)
-	name_variant String @db.VarChar(50)
-	qty Int
-	note String? @db.VarChar(300)
-	price_menu Decimal @db.Decimal(10,2)
-	price_variant Decimal @db.Decimal(10,2)
-	id_order String @db.VarChar(100)
-	created_at DateTime @default(now())
-	update_at DateTime?
+model subdistrict {
+	id         Int        @id @default(autoincrement())
+	name       String     @db.VarChar(50)
+	id_city    Int
+	created_at DateTime   @default(now())
+	update_at  DateTime?
+	rel_merchant   merchant[]
+	rel_order      order[]
+}
 
-	rel_history_order History_order @relation(fields: [id_order], references: [id])
+model user {
+	id         String    @id @db.VarChar(100)
+	username   String    @unique @db.VarChar(100)
+	password   String    @db.VarChar(200)
+	name       String    @db.VarChar(100)
+	email      String    @db.VarChar(100)
+	phone      String?   @db.VarChar(20)
+	poin       Int
+	id_status  Int
+	created_at DateTime  @default(now())
+	update_at  DateTime?
+	image      String?   @db.VarChar(100)
+	rel_order      order[]
+	rel_status     status    @relation(fields: [id_status], references: [id])
 
-	@@map("history_order_item")
+	@@index([id_status], map: "user_id_status_fkey")
+}
+
+model variant {
+	id           String         @id @db.VarChar(100)
+	name         String         @db.VarChar(50)
+	id_menu      String         @db.VarChar(100)
+	created_at   DateTime       @default(now())
+	update_at    DateTime?
+	rel_menu         menu           @relation(fields: [id_menu], references: [id], onDelete: Cascade)
+	rel_variant_item variant_item[]
+
+	@@index([id_menu], map: "variant_id_menu_fkey")
+}
+
+model variant_item {
+	id         String    @id @db.VarChar(100)
+	name       String    @db.VarChar(50)
+	id_variant String    @db.VarChar(100)
+	price      Decimal   @db.Decimal(10, 2)
+	created_at DateTime  @default(now())
+	update_at  DateTime?
+	is_ready   Boolean   @default(true)
+	rel_variant    variant   @relation(fields: [id_variant], references: [id], onDelete: Cascade)
+
+	@@index([id_variant], map: "variant_item_id_variant_fkey")
 }

@@ -342,6 +342,18 @@ const create_OLD = async (ref, request) => {
 const create = async (ref, request) => {
 	const req = validate(createOrderValidation, request)
 
+	// CHECK MERCHANT IS OPEN
+	const checkIsOpen = await prismaClient.merchant.findFirst({
+		where: {
+			id: ref.id_merchant,
+			is_open: true
+		}
+	})
+
+	if(!checkIsOpen){
+		throw new ErrorResponse(403, 'Kamu tidak dapat membuat pesanan karena merchant sedang tutup')
+	}
+
 	// CHECK ORDER
 	const checkOrder = await prismaClient.order.findFirst({
 		where: {
@@ -520,12 +532,11 @@ const create = async (ref, request) => {
 	return result
 }
 
-const cancel = async (id_user, id_order) => {
-	validate(cancelOrderValidation, id_order)
+const cancel = async (id_user) => {
+	validate(cancelOrderValidation, id_user)
 
 	const findOrder = await prismaClient.order.findFirst({
 		where: {
-			id: id_order,
 			id_user: id_user,
 			id_status: {
 				in: [1,4]
@@ -592,7 +603,7 @@ const cancel = async (id_user, id_order) => {
 
 	const findOrderItem = await prismaClient.order_item.findMany({
 		where: {
-			id_order: id_order
+			id_order: findOrder.id
 		}
 		// select: {
 		// 	id: true,
@@ -610,91 +621,92 @@ const cancel = async (id_user, id_order) => {
 
 	return prismaClient.$transaction(async (tx) => {
 		// ADD TO HISTORY ORDER
-		try{
-			await tx.history_order.create({
-				data: {
-					id: findOrder.id,
-					id_user: findOrder.id_user,
-					name_user: findOrder.rel_user.name,
-					id_merchant: findOrder.id_merchant,
-					name_merchant: findOrder.rel_merchant.name,
-					id_courier: findOrder.id_courier,
-					name_courier: findOrder.rel_courier.name,
-					destination: findOrder.destination,
-					shipping_cost: findOrder.shipping_cost,
-					service_cost: findOrder.service_cost,
-					id_city: findOrder.id_city,
-					name_city: findOrder.rel_city.name,
-					id_subd: findOrder.id_subd,
-					name_subd: findOrder.rel_subd.name,
-					id_prov: findOrder.id_prov,
-					name_prov: findOrder.rel_prov.name,
-					created_at: new Date()
-				}
-			})
-		}catch(error){
-			throw new ErrorResponse(500, 'Server error')
-		}
+		// try{
+		await tx.history_order.create({
+			data: {
+				id: findOrder.id,
+				id_user: findOrder.id_user,
+				name_user: findOrder.rel_user.name,
+				id_merchant: findOrder.id_merchant,
+				name_merchant: findOrder.rel_merchant.name,
+				id_courier: findOrder?.id_courier,
+				name_courier: findOrder?.rel_courier?.name,
+				destination: findOrder.destination,
+				shipping_cost: findOrder.shipping_cost,
+				service_cost: findOrder.service_cost,
+				id_city: findOrder.id_city,
+				name_city: findOrder.rel_city.name,
+				id_subd: findOrder.id_subd,
+				name_subd: findOrder.rel_subd.name,
+				id_prov: findOrder.id_prov,
+				name_prov: findOrder.rel_prov.name,
+				created_at: new Date()
+			}
+		})
+		// }catch(error){
+		// 	throw new ErrorResponse(500, 'Server error')
+		// }
 
 		// ADD TO HISTORY ORDER ITEM
-		try{
-			await tx.history_order_item.createMany({
-				data: findOrderItem.map(item => ({
-					id: item.id,
-					id_menu: item.id_menu,
-					name_menu: item.name_menu,
-					price_menu: item.price_menu,
-					id_variant: item.id_variant,
-					name_variant: item.name_variant,
-					price_variant: item.price_variant,
-					id_order: item.id_order,
-					qty: item.qty,
-					note: item.note,
-					created_at: new Date()
-				}))
-			})
-		}catch(error){
-			throw new ErrorResponse(500, 'Server error')
-		}
+		// try{
+		await tx.history_order_item.createMany({
+			data: findOrderItem.map(item => ({
+				id: item.id,
+				id_menu: item.id_menu,
+				name_menu: item.name_menu,
+				price_menu: item.price_menu,
+				id_variant: item.id_variant,
+				name_variant: item.name_variant,
+				price_variant: item.price_variant,
+				id_order: item.id_order,
+				qty: item.qty,
+				note: item.note,
+				image: item.image,
+				created_at: new Date()
+			}))
+		})
+		// }catch(error){
+		// 	throw new ErrorResponse(500, 'Server error')
+		// }
 
 		// ADD TO LOG ORDER
-		try{
-			await tx.log_order.create({
-				data: {
-					id: uniqid(),
-					id_order: id_order,
-					id_status: 12,
-					detail_status: null,
-					change_by: 'user',
-					id_changer: id_user,
-					time: new Date()
-				}
-			})
-		}catch(error){
-			throw new ErrorResponse(500, 'Server error')
-		}
+		// try{
+		await tx.log_order.create({
+			data: {
+				id: uniqid(),
+				id_order: findOrder.id,
+				id_status: 12,
+				detail_status: null,
+				change_by: 'user',
+				id_changer: id_user,
+				time: new Date()
+			}
+		})
+		// }catch(error){
+		// 	throw new ErrorResponse(500, 'Server error')
+		// }
 
 		// DELETE FROM ORDER ITEM
-		try{
-			await tx.order_item.deleteMany({
-				where: {
-					id_order: id_order
-				}
-			})
-		}catch(error){
-			throw new ErrorResponse(500, 'Server error')
-		}
+		// try{
+		await tx.order_item.deleteMany({
+			where: {
+				id_order: findOrder.id
+			}
+		})
+		// }catch(error){
+		// 	throw new ErrorResponse(500, 'Server error')
+		// }
 
 		// DELETE FROM ORDER
-		try{
-			await tx.order.delete({
-				where: {
-					id: id_order
-				}
-			})
-		}catch(error){
-			throw new ErrorResponse(500, 'Server error')
-		}
+		// try{
+		await tx.order.delete({
+			where: {
+				id: findOrder.id
+			}
+		})
+		// }catch(error){
+		// 	throw new ErrorResponse(500, 'Server error')
+		// }
 	})
 }
 

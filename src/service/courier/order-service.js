@@ -118,6 +118,93 @@ const getOrderForSocket = async (idOrder) => {
 	return result
 }
 
+const getDataOrderForHistory = async (id_courier) => {
+	const data = await prismaClient.order.findFirst({
+		where: {
+			id_courier: id_courier
+		},
+		select: {
+			id: true,
+			destination: true,
+			shipping_cost: true,
+			service_cost: true,
+			rel_user: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_merchant: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_courier: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_subd: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_city: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			rel_prov: {
+				select: {
+					id: true,
+					name: true
+				}
+			}
+		}
+	})
+
+	const result = {
+		...data,
+		id_user: data.rel_user.id,
+		name_user: data.rel_user.name,
+		id_merchant: data.rel_merchant.id,
+		name_merchant: data.rel_merchant.name,
+		id_courier: data.rel_courier?.id,
+		name_courier: data.rel_courier?.name,
+		id_subd: data.rel_subd.id,
+		name_subd: data.rel_subd.name,
+		id_city: data.rel_city.id,
+		name_city: data.rel_city.name,
+		id_prov: data.rel_prov.id,
+		name_prov: data.rel_prov.name
+	}
+
+	delete result.rel_user
+	delete result.rel_merchant
+	delete result.rel_courier
+	delete result.rel_subd
+	delete result.rel_city
+	delete result.rel_prov
+
+	return result
+}
+
+const getDataOrderItemForHistory = async (id_order) => {
+	const data = await prismaClient.order_item.findMany({
+		where: {
+			id_order: id_order
+		}
+	})
+
+	const {created_at, update_at, ...result} = data
+
+	return result
+}
+
 const get = async (id_courier) => {
 	await checkCourier(id_courier)
 
@@ -407,7 +494,7 @@ const delivered = async (id_courier) => {
 	return result
 }
 
-const finish = async (id_courier) => {
+const finish_OLD = async (id_courier) => {
 	await checkCourier(id_courier)
 
 	const findOrder = await prismaClient.order.findFirst({
@@ -484,6 +571,104 @@ const finish = async (id_courier) => {
 
 	const result = {
 		id_order: findOrder.id,
+		status: {
+			id: 7,
+			message: getStatusOrder.name
+		}
+	}
+
+	return result
+}
+
+const finish = async (id_courier) => {
+	await checkCourier(id_courier)
+
+	const dataOrder = await getDataOrderForHistory(id_courier)
+	const dataOrderItem = await getDataOrderItemForHistory(dataOrder.id)
+
+	const findOrder = await prismaClient.order.findFirst({
+		where: {
+			id_courier: id_courier
+		},
+		select: {
+			id_status: true
+		}
+	})
+	const idOrder = findOrder.id
+
+	if(!findOrder){
+		throw new ErrorResponse(404, 'Order tidak ditemukan / belum dalam proses pengantaran')
+	}
+
+	if([1,2,3,4].includes(findOrder.id_status)){
+		throw new ErrorResponse(404, 'Order masih dalam proses oleh merchant')
+	}
+
+	if(findOrder.id_status === 5){
+		throw new ErrorResponse(400, 'Kamu harus mengambil pesanan ke merchant dahulu')
+	}
+
+	if(findOrder.id_status === 6){
+		throw new ErrorResponse(400, 'Harap antar pesanan sampai ke alamt tujuan')
+	}
+
+	if(findOrder.id_status === 7){
+		throw new ErrorResponse(400, 'Pesanan sudah diselesaikan')
+	}
+
+	await prismaClient.$transaction(async (tx) => {
+		await tx.history_order.create({
+			data: dataOrder
+		})
+
+		await tx.history_order_item.createMany({
+			data: Object.values(dataOrderItem).map(item => ({
+				...item,
+				created_at: new Date()
+			}))
+		})
+
+		await tx.log_order.create({
+			data: {
+				id: uniqid(),
+				id_order: idOrder,
+				id_status: 7,
+				detail_status: '',
+				change_by: 'Courier',
+				id_changer: id_courier,
+				time: new Date()
+			},
+			select: {
+				id: true
+			}
+		})
+
+		await tx.order_item.deleteMany({
+			where: {
+				id_order: idOrder
+			}
+		})
+
+		await tx.order.delete({
+			where: {
+				id_courier: id_courier
+			}
+		})
+	})
+
+	// GET STATUS & DATA COURIER FOR UPDATE STATUS ORDER VIA SOCKET
+	const getStatusOrder = await prismaClient.status_order.findUnique({
+		where: {
+			id: 7
+		},
+		select: {
+			id: true,
+			name: true
+		}
+	})
+
+	const result = {
+		id_order: idOrder,
 		status: {
 			id: 7,
 			message: getStatusOrder.name

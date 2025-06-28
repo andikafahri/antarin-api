@@ -147,6 +147,15 @@ const getCurrentMerchant = async(id_merchant) => {
 			address: true,
 			image: true,
 			is_open: true,
+			rel_time_operational: {
+				where: {
+					day: new Date().getDay()
+				},
+				select: {
+					start_time: true,
+					end_time: true
+				}
+			},
 			rel_menu: {
 				select: {
 					rel_category: {
@@ -172,12 +181,31 @@ const getCurrentMerchant = async(id_merchant) => {
 		// 	id: item.rel_category.id,
 		// 	name: item.rel_category.name
 		// }))
+		is_open: {
+			status: data.is_open,
+			start_time: data.rel_time_operational[0].start_time,
+			end_time: data.rel_time_operational[0].end_time
+		},
 		categorys: groupCategory
 	}
 
+	delete result.rel_time_operational
 	delete result.rel_menu
 
 	return result
+}
+
+const getTime = async (id_merchant) => {
+	return prismaClient.time_operational.findMany({
+		where: {
+			id_merchant: id_merchant
+		},
+		select: {
+			day: true,
+			start_time: true,
+			end_time: true
+		}
+	})
 }
 
 const getMenuByMerchant = async(id_merchant, filter) => {
@@ -309,5 +337,6 @@ const getMenuByMerchant = async(id_merchant, filter) => {
 
 export default {
 	getCurrentMerchant,
-	getMenuByMerchant
+	getMenuByMerchant,
+	getTime
 }
