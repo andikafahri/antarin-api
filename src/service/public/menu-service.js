@@ -183,8 +183,8 @@ const getCurrentMerchant = async(id_merchant) => {
 		// }))
 		is_open: {
 			status: data.is_open,
-			start_time: data.rel_time_operational[0].start_time || null,
-			end_time: data.rel_time_operational[0].end_time || null
+			start_time: data?.rel_time_operational[0]?.start_time || null,
+			end_time: data?.rel_time_operational[0]?.end_time || null
 		},
 		categorys: groupCategory
 	}
