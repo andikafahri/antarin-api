@@ -17,28 +17,59 @@ const findRow = async (id, id_merchant) => {
 }
 
 const getTime = async (id_merchant) => {
-	const data = await prismaClient.time_operational.findMany({
+	// const data = await prismaClient.time_operational.findMany({
+	// 	where: {
+	// 		id_merchant: id_merchant
+	// 	},
+	// 	select: {
+	// 		rel_merchant: {
+	// 			select: {
+	// 				is_open: true,
+	// 				is_open_mode: true
+	// 			}
+	// 		},
+	// 		id: true,
+	// 		day: true,
+	// 		start_time: true,
+	// 		end_time: true
+	// 	}
+	// })
+
+	// const result = {
+	// 	is_open: data[0].rel_merchant.is_open,
+	// 	is_open_mode: data[0].rel_merchant.is_open_mode,
+	// 	schedule: data.map(time => ({
+	// 		id: time.id,
+	// 		day: time.day,
+	// 		start_time: time.start_time,
+	// 		end_time: time.end_time
+	// 	}))
+	// }
+
+	// delete result.rel_merchant
+
+	const data = await prismaClient.merchant.findFirst({
 		where: {
-			id_merchant: id_merchant
+			id: id_merchant
 		},
 		select: {
-			rel_merchant: {
+			is_open: true,
+			is_open_mode: true,
+			rel_time_operational: {
 				select: {
-					is_open: true,
-					is_open_mode: true
+					id: true,
+					day: true,
+					start_time: true,
+					end_time: true
 				}
-			},
-			id: true,
-			day: true,
-			start_time: true,
-			end_time: true
+			}
 		}
 	})
 
 	const result = {
-		is_open: data[0].rel_merchant.is_open,
-		is_open_mode: data[0].rel_merchant.is_open_mode,
-		schedule: data.map(time => ({
+		is_open: data.is_open,
+		is_open_mode: data.is_open_mode,
+		schedule: data.rel_time_operational?.map(time => ({
 			id: time.id,
 			day: time.day,
 			start_time: time.start_time,
@@ -46,7 +77,7 @@ const getTime = async (id_merchant) => {
 		}))
 	}
 
-	delete result.rel_merchant
+	delete result.rel_time_operational
 
 	return result
 }
@@ -133,6 +164,8 @@ const changeMode = async (id_merchant, request) => {
 		data.is_open = false
 	}
 
+	autoUpdate()
+
 	return prismaClient.merchant.update({
 		where: {
 			id: id_merchant
@@ -142,25 +175,49 @@ const changeMode = async (id_merchant, request) => {
 }
 
 const autoUpdate = async () => {
-	const data = await prismaClient.time_operational.findMany({
+	// const data = await prismaClient.time_operational.findMany({
+	// 	where: {
+	// 		day: new Date().getDay(),
+	// 		rel_merchant: {
+	// 			is_open_mode: 'auto'
+	// 		}
+	// 	}
+	// })
+
+	const merchant = await prismaClient.merchant.findMany({
+		where: {
+			is_open_mode: 'auto'
+		},
+		select: {
+			id: true
+		}
+	})
+
+	const day = await prismaClient.time_operational.findMany({
 		where: {
 			day: new Date().getDay(),
-			rel_merchant: {
-				is_open_mode: 'auto'
+			id_merchant: {
+				in: merchant.map(m => m.id)
 			}
 		}
 	})
 
 	const isOpen = []
 	const isClose = []
+	
+	const merchantIsCloseToday = merchant.filter(m => !day.map(d => d.id).includes(m.id))
+	if(merchantIsCloseToday){
+		merchantIsCloseToday.map(c => {
+			isClose.push(c.id)
+		})
+	}
+
 	const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes()
-	data.map(list => {
+	day.map(list => {
 		const [startH, startM] = list.start_time.split(':').map(Number)
 		const [endH, endM] = list.end_time.split(':').map(Number)
 		const startMinutes = startH * 60 + startM
 		const endMinutes = endH * 60 + endM
-		console.log(startMinutes)
-		console.log(endMinutes)
 
 		if(startMinutes <= endMinutes){
 			// return nowMinutes >= startMinutes && nowMinutes < endMinutes
