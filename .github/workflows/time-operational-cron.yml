@@ -1,0 +1,17 @@
+name: Cron Trigger Time Operational API
+
+on:
+  schedule:
+    # Setiap hari jam 2 pagi (UTC) → jam 09.00 WIB
+    - cron: '15 * * * *'
+
+  workflow_dispatch: # agar bisa juga manual trigger dari GitHub UI
+
+jobs:
+  trigger-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit Time Operational API Endpoint
+      run: |
+      curl -X POST https://antarin-api-production.up.railway.app/api/autoaction/timeoperational \
+      -H "Content-Type: application/json"

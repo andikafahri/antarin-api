@@ -6,8 +6,9 @@ import fs from 'fs'
 import merchantService from '../service/merchant-service.js'
 
 const register = async (req, res, next) => {
+	const {role, ...request} = req.body
 	try{
-		const result = await merchantService.register(req.body)
+		const result = await merchantService.register(req.filename, req.id, request)
 		res.status(200).json({
 			message: 'Register sukses'
 		})
@@ -39,8 +40,9 @@ const get = async (req, res, next) => {
 }
 
 const update = async (req, res, next) => {
+	const {image, ...request} = req.body
 	try{
-		const result = await merchantService.update(req.merchant.id, req.body)
+		const result = await merchantService.update(req.merchant.id, req.filename, request)
 		res.status(200).json({
 			message: 'Edit sukses'
 		})

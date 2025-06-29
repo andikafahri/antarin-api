@@ -12,6 +12,8 @@ import publicSubdistrictController from '../controller/data-center/subdistrict-c
 import publicCategoryController from '../controller/data-center/category-controller.js'
 import publicTimeOperationalController from '../controller/merchant/time-operational-controller.js'
 
+import {upload} from '../middleware/upload-register-middleware.js'
+
 const publicRouter = new express.Router()
 const public2Router = new express.Router()
 const publicRouterDataCenter = new express.Router()
@@ -31,7 +33,7 @@ publicRouter.post('/api/courier', courierController.register)
 publicRouter.post('/api/courier/login', courierController.login)
 
 // MERCHANT
-publicRouter.post('/api/merchant', merchantController.register)
+publicRouter.post('/api/merchant', upload.single('image'), merchantController.register)
 publicRouter.post('/api/merchant/login', merchantController.login)
 
 

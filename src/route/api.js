@@ -61,7 +61,7 @@ courierRouter.put('/change_password', courierController.updatePassword)
 
 // MERCHANT
 merchantRouter.get('/', merchantController.get)
-merchantRouter.patch('/', merchantController.update)
+merchantRouter.patch('/', upload.single('image'), merchantController.update)
 merchantRouter.put('/change_password', merchantController.updatePassword)
 
 // TIME OPERATIONAL

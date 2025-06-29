@@ -1,3 +1,8 @@
+import path from 'path'
+import {dirname} from 'path'
+import {fileURLToPath} from 'url'
+import fs from 'fs'
+import {promises as fsPromises} from 'fs'
 import {validate} from '../validation/validation.js'
 import {
 	registerMerchantValidation,
@@ -15,10 +20,25 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const register = async (request) => {
+const deleteImage = async (id_merchant, filename) => {
+	const __filename = fileURLToPath(import.meta.url)
+	const __dirname = dirname(__filename)
+	const imagePath = path.join(__dirname, '../../public/uploads/images/merchant', id_merchant, filename)
+
+	if(fs.existsSync(imagePath)){
+		await fsPromises.unlink(imagePath)
+	}
+}
+
+const register = async (filename, id, request) => {
 	const data = validate(registerMerchantValidation, request)
 
 	const {confirm_password, ...req} = data
+
+	if(!filename){
+		throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
+	}
+	req.image = filename
 
 	const countMerchant = await prismaClient.merchant.count({
 		where: {
@@ -30,7 +50,7 @@ const register = async (request) => {
 		throw new ErrorResponse(400, 'Username sudah digunakan')
 	}
 
-	req.id = uniqid()
+	req.id = id
 	req.password = await bcrypt.hash(req.password, 10)
 	req.is_open = false
 	req.id_status = 1
@@ -139,9 +159,9 @@ const get = async (id) => {
 	return merchant
 }
 
-const update = async (id, request) => {
+const update = async (id, filename, request) => {
 	const req = validate(updateMerchantValidation, request)
-
+	console.log(req)
 	const data = {}
 
 	data.update_at = new Date()
@@ -178,6 +198,10 @@ const update = async (id, request) => {
 		data.phone = req.phone
 	}
 
+	if(filename){
+		data.image = filename
+	}
+
 	// Mengecek apakah properti phone benar-benar ada di dalam objek req, meskipun nilainya undefined atau kosong string ('')
 	// if('phone' in req){
 	// 	console.log('PHONE: '+req.phone)
@@ -188,7 +212,16 @@ const update = async (id, request) => {
 	// 	}
 	// }
 
-	return prismaClient.merchant.update({
+	const oldData = await prismaClient.merchant.findUnique({
+		where: {
+			id: id
+		},
+		select: {
+			image: true
+		}
+	})
+
+	const result = await prismaClient.merchant.update({
 		where: {
 			id: id
 		},
@@ -197,6 +230,12 @@ const update = async (id, request) => {
 			username: true
 		}
 	})
+
+	if(filename){
+		await deleteImage(id, oldData.image)
+	}
+
+	return result
 }
 
 const updatePassword = async (id, request) => {
