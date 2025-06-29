@@ -12,6 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Hit Time Operational API Endpoint
-      run: |
-      curl -X POST https://antarin-api-production.up.railway.app/api/autoaction/timeoperational \
-      -H "Content-Type: application/json"
+        run: |
+        curl -X POST https://antarin-api-production.up.railway.app/api/autoaction/timeoperational \
+        -H "Content-Type: application/json"
