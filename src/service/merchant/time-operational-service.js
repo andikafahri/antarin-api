@@ -219,7 +219,9 @@ const autoUpdate = async () => {
 	}
 
 	const now = new Date()
-	const nowMinutes = now.getHours() * 60 + now.getMinutes()
+	const timeZone = {timeZone: 'Asia/Jakarta'}
+	const nowID = new Date(now.toLocaleString('en-US', timeZone))
+	const nowMinutes = nowID.getHours() * 60 + nowID.getMinutes()
 	day.map(list => {
 		const [startH, startM] = list.start_time.split(':').map(Number)
 		const [endH, endM] = list.end_time.split(':').map(Number)
@@ -228,6 +230,7 @@ const autoUpdate = async () => {
 
 		if(startMinutes <= endMinutes){
 			// return nowMinutes >= startMinutes && nowMinutes < endMinutes
+			console.log('startMinutes <= endMinutes')
 			if(nowMinutes >= startMinutes && nowMinutes < endMinutes){
 				isOpen.push(list.id_merchant)
 			}else{
@@ -235,6 +238,7 @@ const autoUpdate = async () => {
 			}
 		}else{
 			// return nowMinutes >= startMinutes || nowMinutes < endMinutes
+			console.log('startMinutes > endMinutes')
 			if(nowMinutes >= startMinutes || nowMinutes < endMinutes){
 				isOpen.push(list.id_merchant)
 			}else{
