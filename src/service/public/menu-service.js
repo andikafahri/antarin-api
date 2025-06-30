@@ -4,6 +4,9 @@ import {
 } from '../../validation/public/menu-validation.js'
 import {prismaClient} from '../../application/database.js'
 
+// TRIGGER AUTOUPDATE TIME OPERATIONAL
+import timeOperationalService from '../merchant/time-operational-service.js'
+
 const getMenuByMerchantOLD = async(id_merchant) => {
 	id_merchant = validate(getMenuByMerchantValidation, id_merchant)
 
@@ -196,6 +199,7 @@ const getCurrentMerchant = async(id_merchant) => {
 }
 
 const getTime = async (id_merchant) => {
+	await timeOperationalService.autoUpdate()
 	return prismaClient.time_operational.findMany({
 		where: {
 			id_merchant: id_merchant
