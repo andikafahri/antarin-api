@@ -199,9 +199,12 @@ const autoUpdate = async () => {
 		}
 	})
 
+	const now = new Date()
+	const timeZone = {timeZone: 'Asia/Jakarta'}
+	const nowID = new Date(now.toLocaleString('en-US', timeZone))
 	const day = await prismaClient.time_operational.findMany({
 		where: {
-			day: new Date().getDay(),
+			day: nowID.getDay() === 0 ? 7 : nowID.getDay(),
 			id_merchant: {
 				in: merchant.map(m => m.id)
 			}
@@ -218,9 +221,6 @@ const autoUpdate = async () => {
 		})
 	}
 
-	const now = new Date()
-	const timeZone = {timeZone: 'Asia/Jakarta'}
-	const nowID = new Date(now.toLocaleString('en-US', timeZone))
 	const nowMinutes = nowID.getHours() * 60 + nowID.getMinutes()
 	day.map(list => {
 		const [startH, startM] = list.start_time.split(':').map(Number)

@@ -16,7 +16,8 @@ import orderCourierController from '../controller/courier/order-controller.js'
 import {authUserMiddleware} from '../middleware/auth-user-middleware.js'
 import {authCourierMiddleware} from '../middleware/auth-courier-middleware.js'
 import {authMerchantMiddleware} from '../middleware/auth-merchant-middleware.js'
-import {upload} from '../middleware/upload-middleware.js'
+// import {upload} from '../middleware/upload-middleware.js'
+import {upload} from '../middleware/multer-upload-middleware.js'
 
 
 

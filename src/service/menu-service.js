@@ -1,8 +1,10 @@
+import multer from 'multer'
 import path from 'path'
 import {dirname} from 'path'
 import {fileURLToPath} from 'url'
 import fs from 'fs'
 import {promises as fsPromises} from 'fs'
+import cloudinary from '../middleware/cloudinary.js'
 import {validate} from '../validation/validation.js'
 import {
 	// createMenuValidation,
@@ -15,6 +17,35 @@ import {prismaClient} from '../application/database.js'
 import {ErrorResponse} from '../application/error-response.js'
 import uniqid from 'uniqid'
 import {logger} from '../application/logger.js'
+
+const uploadImage = async (file, id_merchant) => {
+	console.log('Uploading file at:', file.path, 'Size:', file.size, 'Type:', file.mimetype)
+
+	if(!file){
+		throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
+	}
+
+	const filePath = file.path
+	try{
+
+		const result = await cloudinary.uploader.upload(filePath, {
+			// folder: 'merchant/'+id_merchant,
+			folder: path.join('merchant/', id_merchant),
+			public_id: Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname),
+			resource_type: 'image'
+		})
+
+		fs.unlinkSync(filePath)
+
+		return result.secure_url
+	}catch(error){
+		console.log(error)
+		if(fs.existsSync(filePath)){
+			fs.unlinkSync(filePath)
+		}
+		throw new ErrorResponse(500, error.error.message || 'Upload image failed')
+	}
+}
 
 const deleteImage = async (id_merchant, filename) => {
 	const __filename = fileURLToPath(import.meta.url)
@@ -91,15 +122,18 @@ const checkVariantItem = async (id_item, id_variant) => {
 	}
 }
 
-const createMenuwithVariant = async (id_merchant, filename, request) => {
+// const createMenuwithVariant = async (id_merchant, filename, request) => {
+const createMenuwithVariant = async (id_merchant, file, request) => {
 	// return request
 	const req = validate(createMenuWithVariantValidation, request)
 
-	if(!filename){
-		throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
-	}
+	// if(!filename){
+	// 	throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
+	// }
 
 	await checkCategory(req.id_category)
+
+	const urlImage = await uploadImage(file, id_merchant)
 
 	const idMenu = uniqid()
 
@@ -113,7 +147,8 @@ const createMenuwithVariant = async (id_merchant, filename, request) => {
 				price: req.price,
 				is_ready: req.is_ready,
 				id_merchant: id_merchant,
-				image: filename
+				// image: filename
+				image: urlImage
 			},
 			select: {
 				name: true
