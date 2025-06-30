@@ -7,11 +7,11 @@ on:
 
   workflow_dispatch: # agar bisa juga manual trigger dari GitHub UI
 
-  jobs:
-    trigger-api:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Hit Time Operational API Endpoint
+jobs:
+  trigger-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit Time Operational API Endpoint
         run: |
-        curl -X POST https://antarin-api-production.up.railway.app/api/autoaction/timeoperational \
-        -H "Content-Type: application/json"
+          curl -X POST https://antarin-api-production.up.railway.app/api/autoaction/timeoperational \
+          -H "Content-Type: application/json"
