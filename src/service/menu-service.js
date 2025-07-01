@@ -362,8 +362,18 @@ const updateWithVariant = async (id, id_merchant, file, request) => {
 	const oldData = await checkMenu(id, id_merchant)
 	await checkCategory(req.id_category)
 
+	const newData = {
+		name: req.name,
+		detail: req.detail,
+		id_category: req.id_category,
+		price: req.price,
+		is_ready: req.is_ready,
+		update_at: new Date()
+	}
+
 	if(file){
 		const imageUrl = await uploadImage(id_merchant, file)
+		newData.image = imageUrl
 	}
 
 	const reqVariant = req.variants || []
@@ -374,15 +384,16 @@ const updateWithVariant = async (id, id_merchant, file, request) => {
 				id: id,
 				id_merchant: id_merchant
 			},
-			data: {
-				name: req.name,
-				detail: req.detail,
-				id_category: req.id_category,
-				price: req.price,
-				is_ready: req.is_ready,
-				image: imageUrl,
-				update_at: new Date()
-			},
+			// data: {
+			// 	name: req.name,
+			// 	detail: req.detail,
+			// 	id_category: req.id_category,
+			// 	price: req.price,
+			// 	is_ready: req.is_ready,
+			// 	image: imageUrl,
+			// 	update_at: new Date()
+			// },
+			data: newData,
 			select: {
 				name: true
 			}
