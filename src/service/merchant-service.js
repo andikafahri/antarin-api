@@ -1,3 +1,5 @@
+import multer from 'multer'
+import cloudinary from '../middleware/cloudinary.js'
 import path from 'path'
 import {dirname} from 'path'
 import {fileURLToPath} from 'url'
@@ -20,7 +22,63 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const deleteImage = async (id_merchant, filename) => {
+const uploadImage = async (id_merchant, file) => {
+	console.log('Uploading file at:', file.path, 'Size:', file.size, 'Type:', file.mimetype)
+
+	if(!file){
+		throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
+	}
+
+	const filePath = file.path
+	// try{
+	// 	await fs.access(filePath)
+	// }catch(error){
+	// 	throw new ErrorResponse(500, 'File belum tersedia untuk diupload')
+	// }
+
+	try{
+
+		const result = await cloudinary.uploader.upload(filePath, {
+			folder: 'merchant/'+id_merchant,
+			// folder: path.join('merchant/', id_merchant),
+			// public_id: Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname),
+			public_id: Date.now() + '-' + Math.round(Math.random() * 1E9),
+			resource_type: 'image'
+		})
+
+		fs.unlinkSync(filePath)
+
+		return result.secure_url
+	}catch(error){
+		console.log(error)
+		if(fs.existsSync(filePath)){
+			fs.unlinkSync(filePath)
+		}
+		throw new ErrorResponse(500, error.error.message || 'Upload image failed')
+	}
+}
+
+const deleteImage = async (imageUrl) => {
+	const urlObj = new URL(imageUrl)
+	const pathUrl = urlObj.pathname
+	const parts = pathUrl.split('/')
+	const fileName = parts.pop().split('.')[0]
+	const folder = parts.slice(5).join('/')
+	const file = folder+fileName
+	console.log('FILE: '+file)
+	try{
+		const result = await cloudinary.uploader.destroy(file, {
+			resource_type: 'image'
+		})
+
+		return result
+	}catch(error){
+		console.log(error)
+		throw new ErrorResponse(500, error.error.message || 'Delete image failed')
+	}
+}
+
+const deleteImageOLD = async (id_merchant, filename) => {
 	const __filename = fileURLToPath(import.meta.url)
 	const __dirname = dirname(__filename)
 	const imagePath = path.join(__dirname, '../../public/uploads/images/merchant', id_merchant, filename)
@@ -30,15 +88,20 @@ const deleteImage = async (id_merchant, filename) => {
 	}
 }
 
-const register = async (filename, id, request) => {
+// const register = async (file, id, request) => {
+const register = async (file, request) => {
 	const data = validate(registerMerchantValidation, request)
 
 	const {confirm_password, ...req} = data
 
-	if(!filename){
+	if(!file){
 		throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
 	}
-	req.image = filename
+	// req.image = file
+
+	const id = uniqid()
+	const imageUrl = await uploadImage(id, file)
+	req.image = imageUrl
 
 	const countMerchant = await prismaClient.merchant.count({
 		where: {
@@ -159,11 +222,12 @@ const get = async (id) => {
 	return merchant
 }
 
-const update = async (id, filename, request) => {
+const update = async (id, file, request) => {
 	const req = validate(updateMerchantValidation, request)
 	console.log(req)
 	const data = {}
 
+	const imageUrl = await uploadImage(id, file)
 	data.update_at = new Date()
 
 	if(req.username){
@@ -198,8 +262,8 @@ const update = async (id, filename, request) => {
 		data.phone = req.phone
 	}
 
-	if(filename){
-		data.image = filename
+	if(file){
+		data.image = imageUrl
 	}
 
 	// Mengecek apakah properti phone benar-benar ada di dalam objek req, meskipun nilainya undefined atau kosong string ('')
@@ -231,8 +295,8 @@ const update = async (id, filename, request) => {
 		}
 	})
 
-	if(filename){
-		await deleteImage(id, oldData.image)
+	if(file){
+		await deleteImage(oldData.image)
 	}
 
 	return result

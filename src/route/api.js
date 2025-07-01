@@ -62,7 +62,7 @@ courierRouter.put('/change_password', courierController.updatePassword)
 
 // MERCHANT
 merchantRouter.get('/', merchantController.get)
-merchantRouter.patch('/', upload.single('image'), merchantController.update)
+merchantRouter.patch('/', upload.single('file'), merchantController.update)
 merchantRouter.put('/change_password', merchantController.updatePassword)
 
 // TIME OPERATIONAL
@@ -73,10 +73,10 @@ merchantRouter.delete('/timeoperational/:id', timeOperationalController.deleteTi
 merchantRouter.post('/timeoperational/changemode/:mode', timeOperationalController.changeMode)
 
 // MENU
-menuRouter.post('/', upload.single('image'), menuController.createwithVariant)
+menuRouter.post('/', upload.single('file'), menuController.createwithVariant)
 menuRouter.get('/', menuController.getList)
 menuRouter.get('/:id', menuController.getCurrentWithVariant)
-menuRouter.put('/:id', upload.single('image'), menuController.updateWithVariant)
+menuRouter.put('/:id', upload.single('file'), menuController.updateWithVariant)
 menuRouter.delete('/:id', menuController.remove)
 categoryRouter.get('/', menuController.getCategory)
 

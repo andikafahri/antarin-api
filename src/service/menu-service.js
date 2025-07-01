@@ -1,10 +1,10 @@
 import multer from 'multer'
+import cloudinary from '../middleware/cloudinary.js'
 import path from 'path'
 import {dirname} from 'path'
 import {fileURLToPath} from 'url'
 import fs from 'fs'
 import {promises as fsPromises} from 'fs'
-import cloudinary from '../middleware/cloudinary.js'
 import {validate} from '../validation/validation.js'
 import {
 	// createMenuValidation,
@@ -18,7 +18,7 @@ import {ErrorResponse} from '../application/error-response.js'
 import uniqid from 'uniqid'
 import {logger} from '../application/logger.js'
 
-const uploadImage = async (file, id_merchant) => {
+const uploadImage = async (id_merchant, file) => {
 	console.log('Uploading file at:', file.path, 'Size:', file.size, 'Type:', file.mimetype)
 
 	if(!file){
@@ -26,12 +26,19 @@ const uploadImage = async (file, id_merchant) => {
 	}
 
 	const filePath = file.path
+	// try{
+	// 	await fs.access(filePath)
+	// }catch(error){
+	// 	throw new ErrorResponse(500, 'File belum tersedia untuk diupload')
+	// }
+
 	try{
 
 		const result = await cloudinary.uploader.upload(filePath, {
-			// folder: 'merchant/'+id_merchant,
-			folder: path.join('merchant/', id_merchant),
-			public_id: Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname),
+			folder: 'merchant/'+id_merchant,
+			// folder: path.join('merchant/', id_merchant),
+			// public_id: Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname),
+			public_id: Date.now() + '-' + Math.round(Math.random() * 1E9),
 			resource_type: 'image'
 		})
 
@@ -47,7 +54,27 @@ const uploadImage = async (file, id_merchant) => {
 	}
 }
 
-const deleteImage = async (id_merchant, filename) => {
+const deleteImage = async (imageUrl) => {
+	const urlObj = new URL(imageUrl)
+	const pathUrl = urlObj.pathname
+	const parts = pathUrl.split('/')
+	const fileName = parts.pop().split('.')[0]
+	const folder = parts.slice(5).join('/')
+	const file = folder+fileName
+	console.log('FILE: '+file)
+	try{
+		const result = await cloudinary.uploader.destroy(file, {
+			resource_type: 'image'
+		})
+
+		return result
+	}catch(error){
+		console.log(error)
+		throw new ErrorResponse(500, error.error.message || 'Delete image failed')
+	}
+}
+
+const deleteImageOLD = async (id_merchant, filename) => {
 	const __filename = fileURLToPath(import.meta.url)
 	const __dirname = dirname(__filename)
 	const imagePath = path.join(__dirname, '../../public/uploads/images/merchant', id_merchant, filename)
@@ -133,7 +160,7 @@ const createMenuwithVariant = async (id_merchant, file, request) => {
 
 	await checkCategory(req.id_category)
 
-	const urlImage = await uploadImage(file, id_merchant)
+	const imageUrl = await uploadImage(id_merchant, file)
 
 	const idMenu = uniqid()
 
@@ -148,7 +175,7 @@ const createMenuwithVariant = async (id_merchant, file, request) => {
 				is_ready: req.is_ready,
 				id_merchant: id_merchant,
 				// image: filename
-				image: urlImage
+				image: imageUrl
 			},
 			select: {
 				name: true
@@ -326,11 +353,16 @@ const getCurrentWithVariant = async (id, id_merchant) => {
 	return result
 }
 
-const updateWithVariant = async (id, id_merchant, filename, request) => {
+// const updateWithVariant = async (id, id_merchant, filename, request) => {
+const updateWithVariant = async (id, id_merchant, file, request) => {
 	const req = validate(updateMenuWithVariantValidation, request)
 
 	const oldData = await checkMenu(id, id_merchant)
 	await checkCategory(req.id_category)
+
+	if(file){
+		const imageUrl = await uploadImage(id_merchant, file)
+	}
 
 	const reqVariant = req.variants || []
 
@@ -346,7 +378,7 @@ const updateWithVariant = async (id, id_merchant, filename, request) => {
 				id_category: req.id_category,
 				price: req.price,
 				is_ready: req.is_ready,
-				image: filename,
+				image: imageUrl,
 				update_at: new Date()
 			},
 			select: {
@@ -455,8 +487,8 @@ const updateWithVariant = async (id, id_merchant, filename, request) => {
 		}
 	})
 
-	if(filename){
-		await deleteImage(id_merchant, oldData.image)
+	if(file){
+		await deleteImage(oldData.image)
 	}
 
 	return result
@@ -465,17 +497,28 @@ const updateWithVariant = async (id, id_merchant, filename, request) => {
 const remove = async (id, id_merchant) => {
 	await checkMenu(id, id_merchant)
 
-	const dataDeleted = await prismaClient.menu.delete({
+	const dataDeleted = await prismaClient.menu.findUnique({
 		where: {
 			id: id
 		}
 	})
 
+	// if(dataDeleted.image){
+	// 	await deleteImageOLD(id_merchant, dataDeleted.image)
+	// }
+
 	if(dataDeleted.image){
-		await deleteImage(id_merchant, dataDeleted.image)
+		console.log(dataDeleted.image)
+		await deleteImage(dataDeleted.image)
 	}
 
-	return dataDeleted
+	const result = await prismaClient.menu.delete({
+		where: {
+			id: id
+		}
+	})
+
+	return result
 }
 
 const getCategory = async () => {

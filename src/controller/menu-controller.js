@@ -88,7 +88,8 @@ const updateWithVariant = async (req, res, next) => {
 	const request = {...req.body, variants: JSON.parse(req.body.variants || '[]')}
 
 	try{
-		const result = await menuService.updateWithVariant(req.params.id, req.merchant.id, req.filename, request)
+		// const result = await menuService.updateWithVariant(req.params.id, req.merchant.id, req.filename, request)
+		const result = await menuService.updateWithVariant(req.params.id, req.merchant.id, req.file, request)
 		res.status(200).json({
 			message: 'Edit sukses'
 		})

@@ -147,7 +147,7 @@ model menu {
 	created_at  DateTime  @default(now())
 	update_at   DateTime?
 	id_merchant String    @db.VarChar(100)
-	image       String    @db.VarChar(100)
+	image       String    @db.VarChar(200)
 	rel_category    category  @relation(fields: [id_category], references: [id])
 	rel_merchant    merchant  @relation(fields: [id_merchant], references: [id], onDelete: Cascade)
 	rel_variant     variant[]
@@ -172,7 +172,7 @@ model merchant {
 	id_status   Int
 	created_at  DateTime    @default(now())
 	update_at   DateTime?
-	image       String?     @db.VarChar(100)
+	image       String?     @db.VarChar(200)
 	rel_menu        menu[]
 	rel_city        city        @relation(fields: [id_city], references: [id])
 	rel_prov    province    @relation(fields: [id_prov], references: [id])
