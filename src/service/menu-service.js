@@ -55,21 +55,23 @@ const uploadImage = async (id_merchant, file) => {
 }
 
 const deleteImage = async (imageUrl) => {
-	const urlObj = new URL(imageUrl)
-	const pathUrl = urlObj.pathname
-	const parts = pathUrl.split('/')
-	const fileName = parts.pop().split('.')[0]
-	const folder = parts.slice(5).join('/')
-	// const file = folder+fileName
-	const file = `${folder}/${fileName}`
-	console.log('FILE: '+file)
 	try{
-		const result = await cloudinary.uploader.destroy(file, {
-			resource_type: 'image'
-		})
+		if(imageUrl && imageUrl.startsWith('https://res.cloudinary.com/')){
+			const urlObj = new URL(imageUrl)
+			const pathUrl = urlObj.pathname
+			const parts = pathUrl.split('/')
+			const fileName = parts.pop().split('.')[0]
+			const folder = parts.slice(5).join('/')
+			const file = `${folder}/${fileName}`
+			console.log('FILE: '+file)
+			
+			const result = await cloudinary.uploader.destroy(file, {
+				resource_type: 'image'
+			})
 
-		console.log(result)
-		return result
+			console.log(result)
+			return result
+		}
 	}catch(error){
 		console.log(error)
 		throw new ErrorResponse(500, error.error.message || 'Delete image failed')
