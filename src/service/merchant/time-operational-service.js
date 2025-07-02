@@ -144,6 +144,7 @@ const updateAllTime = async (id_merchant, request) => {
 		throw new ErrorResponse(404, 'Data tidak ditemukan')
 	}
 
+	console.log(id_merchant)
 	return prismaClient.time_operational.updateMany({
 		where: {
 			id_merchant: id_merchant

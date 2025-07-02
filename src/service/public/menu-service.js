@@ -199,6 +199,7 @@ const getCurrentMerchant = async(id_merchant) => {
 }
 
 const getTime = async (id_merchant) => {
+	console.log('idmerchant :'+id_merchant)
 	await timeOperationalService.autoUpdate()
 	return prismaClient.time_operational.findMany({
 		where: {

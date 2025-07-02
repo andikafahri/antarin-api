@@ -43,7 +43,7 @@ public2Router.get('/home/merchant/list', publicHomeController.getList)
 
 // CURRENT
 public2Router.get('/merchant/:id_merchant', publicMenuController.getCurrentMerchant)
-public2Router.get('/timeoperational', publicMenuController.getTime)
+public2Router.get('/timeoperational/:id_merchant', publicMenuController.getTime)
 public2Router.get('/merchant/:id_merchant/menu', publicMenuController.getMenuByMerchant)
 
 // SYSTEM COST
