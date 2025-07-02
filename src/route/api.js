@@ -69,6 +69,7 @@ merchantRouter.put('/change_password', merchantController.updatePassword)
 merchantRouter.get('/timeoperational', timeOperationalController.getTime)
 merchantRouter.post('/timeoperational', timeOperationalController.addTime)
 merchantRouter.put('/timeoperational/:id', timeOperationalController.updateTime)
+merchantRouter.put('/alltimeoperational/', timeOperationalController.updateAllTime)
 merchantRouter.delete('/timeoperational/:id', timeOperationalController.deleteTime)
 merchantRouter.post('/timeoperational/changemode/:mode', timeOperationalController.changeMode)
 

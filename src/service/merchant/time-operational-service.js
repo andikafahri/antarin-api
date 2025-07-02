@@ -1,5 +1,5 @@
 import {validate} from '../../validation/validation.js'
-import {addAndUpdateValidation} from '../../validation/merchant/time-operational-validation.js'
+import {addAndUpdateValidation, updateAllTimeOperationalValidation} from '../../validation/merchant/time-operational-validation.js'
 import {prismaClient} from '../../application/database.js'
 import {ErrorResponse} from '../../application/error-response.js'
 
@@ -124,6 +124,31 @@ const updateTime = async (id, id_merchant, request) => {
 		},
 		data: {
 			day: req.day,
+			start_time: req.start_time,
+			end_time: req.end_time,
+			update_at: new Date()
+		}
+	})
+}
+
+const updateAllTime = async (id_merchant, request) => {
+	const req = validate(updateAllTimeOperationalValidation, request)
+
+	const find = await prismaClient.time_operational.findFirst({
+		where: {
+			id_merchant: id_merchant
+		}
+	})
+
+	if(!find){
+		throw new ErrorResponse(404, 'Data tidak ditemukan')
+	}
+
+	return prismaClient.time_operational.updateMany({
+		where: {
+			id_merchant: id_merchant
+		},
+		data: {
 			start_time: req.start_time,
 			end_time: req.end_time,
 			update_at: new Date()
@@ -284,6 +309,7 @@ export default {
 	getTime,
 	addTime,
 	updateTime,
+	updateAllTime,
 	deleteTime,
 	changeMode,
 	autoUpdate

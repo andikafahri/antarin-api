@@ -39,6 +39,12 @@ const addAndUpdateValidation = Joi.object({
 	end_time: timeSchema.required()
 })
 
+const updateAllTimeOperationalValidation = Joi.object({
+	start_time: timeSchema.required(),
+	end_time: timeSchema.required()
+})
+
 export {
-	addAndUpdateValidation
+	addAndUpdateValidation,
+	updateAllTimeOperationalValidation
 }
