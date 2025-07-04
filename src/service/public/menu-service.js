@@ -340,8 +340,52 @@ const getMenuByMerchant = async(id_merchant, filter) => {
 	return Object.values(groupByCategory)
 }
 
+const getMenuById = async(id_menu) => {
+	const data = await prismaClient.menu.findUnique({
+		where: {
+			id: id_menu
+		},
+		select: {
+			id: true,
+			name: true,
+			price: true,
+			image: true,
+			is_ready: true,
+			rel_variant: {
+				select: {
+					name: true,
+					rel_variant_item: {
+						select: {
+							id: true,
+							name: true,
+							price: true,
+							is_ready: true
+						}
+					}
+				}
+			}
+		}
+	})
+
+	const result = {
+		...data,
+		variants: data.rel_variant.map(v => ({
+			name: v.name,
+			items: v.rel_variant_item.map(i => ({
+				...i
+			}))
+		}))
+	}
+
+	delete result.rel_variant
+	delete result.rel_variant_item
+
+	return result
+}
+
 export default {
 	getCurrentMerchant,
 	getMenuByMerchant,
+	getMenuById,
 	getTime
 }
