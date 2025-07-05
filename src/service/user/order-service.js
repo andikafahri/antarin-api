@@ -386,7 +386,7 @@ const create = async (ref, request) => {
 	})
 
 	if(findMenu.length !== id_menu.length){
-		throw new ErrorResponse(404, 'Beberapa menu tidak ditemukan / tidak sesuai dengan merchant')
+		throw new ErrorResponse(404, 'Beberapa menu tidak ditemukan / tidak tersedia / tidak sesuai dengan merchant')
 	}
 
 	// const [user, merchant, courier, subd, city, prov] = await Promise.all([
@@ -452,7 +452,8 @@ const create = async (ref, request) => {
 		)
 
 	if(findVariant.includes(null)){
-		throw new ErrorResponse(404, 'Varian tidak ditemukan / tidak sesuai dengan menu')
+		// throw new ErrorResponse(404, 'Varian tidak ditemukan / tidak sesuai dengan menu')
+		throw new ErrorResponse(404, 'Varian tidak tersedia')
 	}
 
 	const name_variant = {}
@@ -759,6 +760,7 @@ const get = async (id_user) => {
 					name: true,
 					number_plate: true,
 					color: true,
+					image: true,
 					rel_brand: {
 						select: {
 							name: true,
@@ -802,6 +804,7 @@ const get = async (id_user) => {
 
 		dataCourier = {
 			name: data.rel_courier.name,
+			image: data.rel_courier.image,
 			number_plate: data.rel_courier.number_plate,
 			vehicle: data.rel_courier.rel_brand.brand + ' ' + data.rel_courier.rel_brand.name,
 			vehicle_color: data.rel_courier.color

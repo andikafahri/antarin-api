@@ -82,7 +82,8 @@ const createMenuWithVariantValidation = Joi.object({
 			items: Joi.array().items(
 				Joi.object({
 					name: nameVariantSchema.required(),
-					price: priceVariantItemSchema.required()
+					price: priceVariantItemSchema.required(),
+					is_ready: isReadySchema.required()
 				})
 				// ).min(1).optional().default([])
 				).min(2).required()
@@ -91,7 +92,12 @@ const createMenuWithVariantValidation = Joi.object({
 				'any.required': 'Item varian tidak boleh kosong'
 			})
 		})
-		).optional().default([])
+		).optional()
+	.max(1)
+	.default([])
+	.messages({
+		'array.max': 'Kategori varian maksimal 1'
+	})
 })
 
 const getListMenuValidation = Joi.string().max(100).required()
@@ -119,7 +125,8 @@ const updateMenuWithVariantValidation = Joi.object({
 				Joi.object({
 					id: Joi.string().max(100).optional().empty('').trim(),
 					name: nameVariantSchema.required(),
-					price: priceVariantItemSchema.required()
+					price: priceVariantItemSchema.required(),
+					is_ready: isReadySchema.required()
 				})
 				)
 			.min(2)
@@ -130,6 +137,10 @@ const updateMenuWithVariantValidation = Joi.object({
 			})
 		})
 		).optional()
+	.max(1)
+	.messages({
+		'array.max': 'Kategori varian maksimal 1'
+	})
 })
 
 export {

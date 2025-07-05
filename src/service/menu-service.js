@@ -164,7 +164,12 @@ const createMenuwithVariant = async (id_merchant, file, request) => {
 
 	await checkCategory(req.id_category)
 
-	const imageUrl = await uploadImage(id_merchant, file)
+	if(req.variants && req.variants.length > 1){
+		throw new ErrorResponse(400, 'Kamu hanya bisa menambahkan 1 kategori varian')
+	}
+
+	// const imageUrl = await uploadImage(id_merchant, file)
+	const imageUrl = 'test'
 
 	const idMenu = uniqid()
 
@@ -204,7 +209,8 @@ const createMenuwithVariant = async (id_merchant, file, request) => {
 				id: uniqid(),
 				name: item.name,
 				id_variant: idVariant,
-				price: item.price
+				price: item.price,
+				is_ready: item.is_ready
 			}))
 
 			await tx.variant_item.createMany({
@@ -262,7 +268,8 @@ const getList = async (id_merchant, filterQuery) => {
 						select: {
 							id: true,
 							name: true,
-							price: true
+							price: true,
+							is_ready: true
 						}
 					}
 				}
@@ -359,6 +366,10 @@ const getCurrentWithVariant = async (id, id_merchant) => {
 
 // const updateWithVariant = async (id, id_merchant, filename, request) => {
 const updateWithVariant = async (id, id_merchant, file, request) => {
+	if(request.variants.length > 1){
+		throw new ErrorResponse(400, 'Kamu hanya boleh memiliki 1 kategori varian')
+	}
+
 	const req = validate(updateMenuWithVariantValidation, request)
 
 	const oldData = await checkMenu(id, id_merchant)
@@ -463,6 +474,7 @@ const updateWithVariant = async (id, id_merchant, file, request) => {
 							data: {
 								name: i.name,
 								price: i.price,
+								is_ready: i.is_ready,
 								update_at: new Date()
 							}
 						})

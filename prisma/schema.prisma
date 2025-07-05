@@ -48,7 +48,7 @@ model courier {
 	id_status    Int
 	created_at   DateTime  @default(now())
 	update_at    DateTime?
-	image        String?   @db.VarChar(100)
+	image       String    @db.VarChar(200)
 	rel_brand        brand     @relation(fields: [id_brand], references: [id])
 	rel_status       status    @relation(fields: [id_status], references: [id])
 	rel_order        order[]
@@ -92,7 +92,7 @@ model history_order_item {
 	update_at     DateTime?
 	price_menu    Decimal       @db.Decimal(10, 2)
 	price_variant Decimal       @db.Decimal(10, 2)
-	image         String        @db.VarChar(100)
+	image       String    @db.VarChar(200)
 	rel_history_order history_order @relation(fields: [id_order], references: [id])
 
 	@@index([id_order], map: "history_order_item_id_order_fkey")
@@ -117,7 +117,7 @@ model log_menu_unavailable {
 	unavailable_variant Boolean   @default(false)
 	id_menu             String    @db.VarChar(100)
 	is_confirm          Boolean   @default(false)
-	image               String?   @db.VarChar(100)
+	image       String    @db.VarChar(200)
 	rel_log_order           log_order @relation(fields: [id_log_order], references: [id])
 
 	@@index([id_log_order], map: "log_menu_unavailable_id_log_order_fkey")
@@ -246,7 +246,7 @@ model order_item {
 	name_variant  String    @db.VarChar(50)
 	price_menu    Decimal   @db.Decimal(10, 2)
 	price_variant Decimal   @db.Decimal(10, 2)
-	image         String    @db.VarChar(100)
+	image       String    @db.VarChar(200)
 	rel_order         order     @relation(fields: [id_order], references: [id])
 
 	@@index([id_order], map: "order_item_id_order_fkey")
@@ -301,7 +301,7 @@ model user {
 	id_status  Int
 	created_at DateTime  @default(now())
 	update_at  DateTime?
-	image      String?   @db.VarChar(100)
+	image       String?    @db.VarChar(200)
 	rel_order      order[]
 	rel_status     status    @relation(fields: [id_status], references: [id])
 

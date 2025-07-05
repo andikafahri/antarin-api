@@ -11,3 +11,4 @@ src/service/menu-service OLD.js
 src/validation/user/user-validation OLD.js
 src/main NO REALTIME.JS
 public/
+tmp/

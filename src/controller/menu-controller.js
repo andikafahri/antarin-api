@@ -27,6 +27,7 @@ const createwithVariant = async (req, res, next) => {
 	// }
 
 	const request = {...req.body, variants: req.body.variants ? JSON.parse(req.body.variants) : []}
+	// const request = {...req.body, variants: JSON.parse(req.body.variants) || []}
 
 	try{
 		// const result = await menuService.createMenuwithVariant(req.merchant.id, req.filename, request)
@@ -86,6 +87,16 @@ const getCurrentWithVariant = async (req, res, next) => {
 
 const updateWithVariant = async (req, res, next) => {
 	const request = {...req.body, variants: JSON.parse(req.body.variants || '[]')}
+
+	// let request
+	// if(typeof req.body.variants === 'string'){
+	// 	request = {...req.body, variants: JSON.parse(req.body.variants || '[]')}
+	// 	console.log('STRING')
+	// 	console.log(request.variants)
+	// }else{
+	// 	request = req.body
+	// 	console.log('BUKAN STRING')
+	// }
 
 	try{
 		// const result = await menuService.updateWithVariant(req.params.id, req.merchant.id, req.filename, request)
