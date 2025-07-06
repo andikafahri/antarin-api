@@ -140,6 +140,13 @@ const getMenuByMerchantOLD2 = async(id_merchant, filter) => {
 const getCurrentMerchant = async(id_merchant) => {
 	id_merchant = validate(getMenuByMerchantValidation, id_merchant)
 
+	let day
+	if(new Date().getDay() === 0){
+		day = 7
+	}else{
+		day = new Date().getDay()
+	}
+
 	const data = await prismaClient.merchant.findFirst({
 		where: {
 			id: id_merchant
@@ -152,7 +159,7 @@ const getCurrentMerchant = async(id_merchant) => {
 			is_open: true,
 			rel_time_operational: {
 				where: {
-					day: new Date().getDay()
+					day: day
 				},
 				select: {
 					start_time: true,
