@@ -196,6 +196,7 @@ const get = async (request) => {
 			rel_courier: {
 				select: {
 					name: true,
+					image: true,
 					number_plate: true,
 					color: true,
 					rel_brand: {
@@ -215,7 +216,8 @@ const get = async (request) => {
 					name_variant: true,
 					price_variant: true,
 					qty: true,
-					note: true
+					note: true,
+					image: true
 				}
 			},
 			rel_status: {
@@ -236,6 +238,7 @@ const get = async (request) => {
 			merchant: data.rel_merchant,
 			courier: {
 				name: data?.rel_courier?.name,
+				image: data?.rel_courier?.image,
 				number_plate: data?.rel_courier?.number_plate,
 				vehicle: data?.rel_courier?.rel_brand.brand + ' ' + data?.rel_courier?.rel_brand.name,
 				vehicle_color: data?.rel_courier?.color
@@ -249,6 +252,7 @@ const get = async (request) => {
 				price_variant: item.price_variant,
 				qty: item.qty,
 				note: item.note,
+				image: item.image,
 				total_price: (Number(item.price_menu) + Number(item.price_variant)) * item.qty
 			}))
 		}
