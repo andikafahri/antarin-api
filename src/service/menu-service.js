@@ -168,8 +168,8 @@ const createMenuwithVariant = async (id_merchant, file, request) => {
 		throw new ErrorResponse(400, 'Kamu hanya bisa menambahkan 1 kategori varian')
 	}
 
-	// const imageUrl = await uploadImage(id_merchant, file)
-	const imageUrl = 'test'
+	const imageUrl = await uploadImage(id_merchant, file)
+	// const imageUrl = 'test'
 
 	const idMenu = uniqid()
 

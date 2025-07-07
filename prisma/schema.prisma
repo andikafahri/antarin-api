@@ -83,15 +83,15 @@ model history_order_item {
 	id            String        @id @db.VarChar(100)
 	id_menu       String        @db.VarChar(100)
 	name_menu     String        @db.VarChar(100)
-	id_variant    String        @db.VarChar(100)
-	name_variant  String        @db.VarChar(50)
+	id_variant    String?        @db.VarChar(100)
+	name_variant  String?        @db.VarChar(50)
 	qty           Int
 	note          String?       @db.VarChar(300)
 	id_order      String        @db.VarChar(100)
 	created_at    DateTime      @default(now())
 	update_at     DateTime?
 	price_menu    Decimal       @db.Decimal(10, 2)
-	price_variant Decimal       @db.Decimal(10, 2)
+	price_variant Decimal?       @db.Decimal(10, 2) @default(0)
 	image       String    @db.VarChar(200)
 	rel_history_order history_order @relation(fields: [id_order], references: [id])
 
@@ -237,15 +237,15 @@ model order_item {
 	id            String    @id @db.VarChar(100)
 	id_menu       String    @db.VarChar(100)
 	name_menu     String    @db.VarChar(100)
-	id_variant    String    @db.VarChar(100)
+	id_variant    String?    @db.VarChar(100)
 	qty           Int
 	note          String?   @db.VarChar(300)
 	id_order      String    @db.VarChar(100)
 	created_at    DateTime  @default(now())
 	update_at     DateTime?
-	name_variant  String    @db.VarChar(50)
+	name_variant  String?    @db.VarChar(50)
 	price_menu    Decimal   @db.Decimal(10, 2)
-	price_variant Decimal   @db.Decimal(10, 2)
+	price_variant Decimal?   @db.Decimal(10, 2) @default(0)
 	image       String    @db.VarChar(200)
 	rel_order         order     @relation(fields: [id_order], references: [id])
 

@@ -78,7 +78,7 @@ const createOrderValidation = Joi.object({
 	items: Joi.array().items(
 		Joi.object({
 			id_menu: idMenuSchema.required(),
-			id_variant:idVariantSchema.required(),
+			id_variant:idVariantSchema.optional(),
 			qty: qtySchema.required(),
 			note: noteSchema.optional().empty('')
 		})

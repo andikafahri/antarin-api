@@ -430,38 +430,93 @@ const create = async (ref, request) => {
 	// 	throw new ErrorResponse(400, 'Varian tidak ditemukan / tidak sesuai dengan menu')
 	// }
 
-	const findVariant = await Promise.all(
-		req.items.map(async item => {
-			return prismaClient.variant_item.findFirst({
-				where: {
-					id: item.id_variant,
-					is_ready: true,
-					rel_variant: {
-						rel_menu: {
-							id: item.id_menu
+	// const findVariant = await Promise.all(
+	// 	req.items.map(async item => {
+	// 		return prismaClient.variant_item.findFirst({
+	// 			where: {
+	// 				id: item.id_variant,
+	// 				is_ready: true,
+	// 				rel_variant: {
+	// 					rel_menu: {
+	// 						id: item.id_menu
+	// 					}
+	// 				}
+	// 			},
+	// 			select: {
+	// 				id: true,
+	// 				name: true,
+	// 				price: true,
+	// 				rel_variant: {
+	// 					select: {
+	// 						rel_menu: {
+	// 							select: {
+	// 								id: true
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		})
+	// 	})
+	// 	)
+
+	const findVariant = await prismaClient.menu.findMany({
+		where: {
+			id: {in: req.items.map(item => item.id_menu)},
+			is_ready: true
+		},
+		select: {
+			id: true,
+			rel_variant: {
+				select: {
+					rel_variant_item: {
+						select: {
+							id: true,
+							name: true,
+							price: true,
+							is_ready: true
 						}
 					}
-				},
-				select: {
-					id: true,
-					name: true,
-					price: true
 				}
-			})
-		})
-		)
+			}
+		}
+	})
 
-	if(findVariant.includes(null)){
-		// throw new ErrorResponse(404, 'Varian tidak ditemukan / tidak sesuai dengan menu')
-		throw new ErrorResponse(404, 'Varian tidak tersedia')
-	}
-
+	console.dir(findVariant, {depth: null})
+	const menuWithVariantFromDb = {}
+	findVariant.forEach(item => {
+		menuWithVariantFromDb[item.id] = item?.rel_variant.flatMap(v => v.rel_variant_item || []) || []
+	})
+	console.log(menuWithVariantFromDb, {depth: null})
 	const name_variant = {}
 	const price_variant = {}
-	findVariant.forEach(item => {
-		name_variant[item.id] = item.name
-		price_variant[item.id] = item.price
+	req.items.forEach(item => {
+		const variantList = menuWithVariantFromDb[item.id_menu]
+		if(variantList.length > 0){
+			if(!item.id_variant){
+				throw new ErrorResponse(400, 'Harap pilih varian pada menu yang memiliki varian')
+			}
+
+			if(!variantList.find(v => v.id === item.id_variant && v.is_ready)){
+				throw new ErrorResponse(400, 'Ada beberapa varian yang tidak tersedia')
+			}
+		}else{
+			if(item.id_variant){
+				throw new ErrorResponse(400, 'Kamu tidak boleh mengisi varian pada menu yang tidak memiliki varian')
+			}
+		}
+
+		const variantData = variantList.find(v => v.id === item.id_variant)
+		console.log(item)
+		console.log(variantData)
+		name_variant[item?.id_variant] = variantData?.name || null
+		price_variant[item?.id_variant] = variantData?.price || 0
 	})
+
+	// findVariant.forEach(item => {
+	// 	name_variant[item.id] = item.name
+	// 	price_variant[item.id] = item.price
+	// })
 
 	logger.info('id_user: '+ref.id_user)
 	const idOrder = uniqid()
@@ -493,6 +548,8 @@ const create = async (ref, request) => {
 			}
 		})
 
+		console.log(name_variant)
+		console.log(price_variant)
 		logger.info('id_menu: '+id_menu)
 		logger.info('idOrder: '+idOrder)
 
@@ -500,7 +557,7 @@ const create = async (ref, request) => {
 			id: uniqid(),
 			id_menu: item.id_menu,
 			name_menu: name_menu[item.id_menu],
-			id_variant: item.id_variant,
+			id_variant: item.id_variant || null,
 			name_variant: name_variant[item.id_variant],
 			qty: item.qty,
 			note: item.note,
