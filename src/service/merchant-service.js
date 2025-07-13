@@ -251,7 +251,10 @@ const update = async (id, file, request) => {
 
 	const data = {}
 
-	const imageUrl = await uploadImage(id, file)
+	if(file){
+		const imageUrl = await uploadImage(id, file)
+	}
+	
 	data.update_at = new Date()
 
 	if(req.username){
