@@ -9,7 +9,9 @@ import {
 	addressSchema,
 	idSubdSchema,
 	idCitySchema,
-	idProvSchema
+	idProvSchema,
+	latCoordinateSchema,
+	lngCoordinateSchema
 } from './schema_validation.js'
 
 const registerMerchantValidation = Joi.object({
@@ -18,9 +20,13 @@ const registerMerchantValidation = Joi.object({
 	confirm_password:confirmPasswordSchema.valid(Joi.ref('password')).required(),
 	name:nameSchema.required(),
 	address: addressSchema.required(),
-	id_subd: idSubdSchema.required(),
-	id_city: idCitySchema.required(),
-	id_prov: idProvSchema.required(),
+	// id_subd: idSubdSchema.required(),
+	// id_city: idCitySchema.required(),
+	// id_prov: idProvSchema.required(),
+	coordinates: Joi.object({
+		lat: latCoordinateSchema.required(),
+		lng: lngCoordinateSchema.required()
+	}).required(),
 	email:emailSchema.required(),
 	phone:phoneSchema.optional().empty('')
 })
@@ -36,9 +42,13 @@ const updateMerchantValidation = Joi.object({
 	username:usernameSchema.optional(),
 	name:nameSchema.optional(),
 	address: addressSchema.optional(),
-	id_subd: idSubdSchema.optional(),
-	id_city: idCitySchema.optional(),
-	id_prov: idProvSchema.optional(),
+	// id_subd: idSubdSchema.optional(),
+	// id_city: idCitySchema.optional(),
+	// id_prov: idProvSchema.optional(),
+	coordinates: Joi.object({
+		lat: latCoordinateSchema.required(),
+		lng: lngCoordinateSchema.required()
+	}).required(),
 	email:emailSchema.optional(),
 	phone:phoneSchema.optional().allow('')
 })

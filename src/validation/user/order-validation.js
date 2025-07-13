@@ -3,7 +3,9 @@ import {
 	addressSchema,
 	idSubdSchema,
 	idCitySchema,
-	idProvSchema
+	idProvSchema,
+	latCoordinateSchema,
+	lngCoordinateSchema
 } from '../schema_validation.js'
 
 const idOrderSchema = Joi.string()
@@ -72,9 +74,13 @@ const idUserSchema = Joi.string()
 
 const createOrderValidation = Joi.object({
 	destination: addressSchema.required(),
-	id_subd: idSubdSchema.required(),
-	id_city: idCitySchema.required(),
-	id_prov: idProvSchema.required(),
+	// id_subd: idSubdSchema.required(),
+	// id_city: idCitySchema.required(),
+	// id_prov: idProvSchema.required(),
+	coordinate: Joi.object({
+		lat: latCoordinateSchema.required(),
+		lng: lngCoordinateSchema.required()
+	}).required(),
 	items: Joi.array().items(
 		Joi.object({
 			id_menu: idMenuSchema.required(),

@@ -7,6 +7,8 @@ import merchantService from '../service/merchant-service.js'
 
 const register = async (req, res, next) => {
 	const {role, ...request} = req.body
+	request.coordinates = JSON.parse(req.body.coordinates)
+
 	try{
 		// const result = await merchantService.register(req.filename, req.id, request)
 		const result = await merchantService.register(req.file, request)
@@ -41,7 +43,9 @@ const get = async (req, res, next) => {
 }
 
 const update = async (req, res, next) => {
-	const {image, ...request} = req.body
+	const {image, coordinates, ...request} = req.body
+	request.coordinates = JSON.parse(req.body.coordinates)
+
 	try{
 		const result = await merchantService.update(req.merchant.id, req.file, request)
 		res.status(200).json({

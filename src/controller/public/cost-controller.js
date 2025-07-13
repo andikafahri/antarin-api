@@ -2,7 +2,7 @@ import destinationService from '../../service/public/cost-service.js'
 
 const getSystemCost = async (req, res, next) => {
 	try {
-		const result = await destinationService.getSystemCost(req.body.destination)
+		const result = await destinationService.getSystemCost(req.params.id_merchant, req.body.destination)
 
 		res.status(200).json({
 			data: result

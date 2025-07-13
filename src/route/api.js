@@ -1,6 +1,7 @@
 // CONTROLLER
 import express from 'express'
 import userController from '../controller/user/user-controller.js'
+import addressController from '../controller/user/address-controller.js'
 import courierController from '../controller/courier-controller.js'
 import merchantController from '../controller/merchant-controller.js'
 import timeOperationalController from '../controller/merchant/time-operational-controller.js'
@@ -54,6 +55,12 @@ orderCourierRouter.use(authCourierMiddleware)
 userRouter.get('/', userController.get)
 userRouter.patch('/', userController.update)
 userRouter.put('/change_password', userController.updatePassword)
+userRouter.get('/address', addressController.getAddress)
+userRouter.post('/address', addressController.addAddress)
+userRouter.get('/address_bookmarked/:id', addressController.getAddressBookmarked)
+userRouter.put('/address_bookmarked/:id', addressController.updateAddress)
+userRouter.delete('/address/:id', addressController.deleteAddress)
+userRouter.put('/address/:id/to_bookmark', addressController.bookmarkAddress)
 
 // COURIER
 courierRouter.get('/', courierController.get)

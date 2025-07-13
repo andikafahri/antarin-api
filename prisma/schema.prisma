@@ -32,6 +32,7 @@ model city {
 	update_at  DateTime?
 	rel_merchant   merchant[]
 	rel_order      order[]
+	rel_history_address history_address[]
 }
 
 model courier {
@@ -66,6 +67,8 @@ model history_order {
 	id_courier         String?              @db.VarChar(100)
 	name_courier       String?              @db.VarChar(100)
 	destination        String               @db.VarChar(200)
+	lng Decimal @db.Decimal(20,8)
+	lat Decimal @db.Decimal(20,8)
 	shipping_cost      Decimal              @db.Decimal(10, 2)
 	created_at         DateTime             @default(now())
 	update_at          DateTime?
@@ -165,6 +168,8 @@ model merchant {
 	id_subd     Int
 	id_city     Int
 	id_prov     Int
+	lng Decimal @db.Decimal(11,8)
+	lat Decimal @db.Decimal(10,8)
 	email       String      @db.VarChar(100)
 	phone       String?     @db.VarChar(20)
 	is_open     Boolean     @default(false)
@@ -193,6 +198,8 @@ model order {
 	id_merchant   String       @db.VarChar(100)
 	id_courier    String?      @db.VarChar(100)
 	destination   String       @db.VarChar(200)
+	lng Decimal @db.Decimal(20,8)
+	lat Decimal @db.Decimal(20,8)
 	shipping_cost Decimal      @db.Decimal(10, 2)
 	created_at    DateTime     @default(now())
 	update_at     DateTime?
@@ -259,6 +266,7 @@ model province {
 	update_at  DateTime?
 	rel_merchant   merchant[]
 	rel_order      order[]
+	rel_history_address history_address[]
 }
 
 model status {
@@ -288,6 +296,7 @@ model subdistrict {
 	update_at  DateTime?
 	rel_merchant   merchant[]
 	rel_order      order[]
+	rel_history_address history_address[]
 }
 
 model user {
@@ -303,6 +312,7 @@ model user {
 	update_at  DateTime?
 	image       String?    @db.VarChar(200)
 	rel_order      order[]
+	rel_history_address history_address[]
 	rel_status     status    @relation(fields: [id_status], references: [id])
 
 	@@index([id_status], map: "user_id_status_fkey")
@@ -331,4 +341,24 @@ model variant_item {
 	rel_variant    variant   @relation(fields: [id_variant], references: [id], onDelete: Cascade)
 
 	@@index([id_variant], map: "variant_item_id_variant_fkey")
+}
+
+model history_address {
+	id String @id @db.VarChar(100)
+	id_user String @db.VarChar(100)
+	name String? @db.VarChar(50)
+	address String @db.VarChar(200)
+	id_subd            Int
+	id_city            Int
+	id_prov            Int
+	lng Decimal @db.Decimal(20,8)
+	lat Decimal @db.Decimal(20,8)
+	is_bookmark Boolean @default(false)
+
+	rel_user user @relation(fields: [id_user], references: [id], onDelete: Cascade)
+	rel_subd subdistrict @relation(fields: [id_subd], references: [id])
+	rel_city        city        @relation(fields: [id_city], references: [id])
+	rel_prov    province    @relation(fields: [id_prov], references: [id])
+
+	@@map("history_address")
 }

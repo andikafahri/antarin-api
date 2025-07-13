@@ -48,7 +48,7 @@ public2Router.get('/merchant/:id_merchant/menu', publicMenuController.getMenuByM
 public2Router.get('/menu/:id_menu', publicMenuController.getMenuById)
 
 // SYSTEM COST
-public2Router.post('/system-cost', publicDestinationController.getSystemCost)
+public2Router.post('/system-cost/:id_merchant', publicDestinationController.getSystemCost)
 
 // DATA CENTER
 publicRouterDataCenter.get('/province', publicProvinceController.get)

@@ -131,6 +131,28 @@ const idProvSchema = Joi.number()
 	'any.required': 'Provinsi tidak boleh kosong'
 })
 
+const latCoordinateSchema = Joi.number()
+.min(-90)
+.max(90)
+.required()
+.messages({
+	'number.base': 'Latitude harus berupa angka',
+	'number.min': 'Latitude minimal -90',
+	'number.max': 'Latitude maksimal 90',
+	'any.required': 'Titik tujuan wajib diisi',
+})
+
+const lngCoordinateSchema = Joi.number()
+.min(-180)
+.max(180)
+.required()
+.messages({
+	'number.base': 'Longitude harus berupa angka',
+	'number.min': 'Longitude minimal -180',
+	'number.max': 'Longitude maksimal 180',
+	'any.required': 'Titik tujuan wajib diisi',
+})
+
 export {
 	usernameSchema,
 	passwordSchema,
@@ -141,5 +163,7 @@ export {
 	addressSchema,
 	idSubdSchema,
 	idCitySchema,
-	idProvSchema
+	idProvSchema,
+	latCoordinateSchema,
+	lngCoordinateSchema
 }

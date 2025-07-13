@@ -9,6 +9,7 @@ import {prismaClient} from '../../application/database.js'
 import {ErrorResponse} from '../../application/error-response.js'
 import uniqid from 'uniqid'
 import {logger} from '../../application/logger.js'
+import {getAddressWithCoordinate} from '../../application/geo-json.js'
 import systemCostService from '../../service/public/cost-service.js'
 
 const getIdLogOrderByUser = async (id_user) => {
@@ -520,7 +521,10 @@ const create = async (ref, request) => {
 
 	logger.info('id_user: '+ref.id_user)
 	const idOrder = uniqid()
-	const dataSystemCost = await systemCostService.getSystemCost(req.destination)
+	const addressData = await getAddressWithCoordinate(req.coordinate)
+	console.log('GET FROM GEOJSON :')
+	console.log(addressData)
+	const dataSystemCost = await systemCostService.getSystemCost(ref.id_merchant, req.coordinate)
 	await prismaClient.$transaction(async (tx) => {
 		await tx.order.create({
 			data: {
@@ -532,11 +536,13 @@ const create = async (ref, request) => {
 				// id_courier: null,
 				// name_courier: courier.name,
 				destination: req.destination,
-				id_subd: req.id_subd,
+				lng: req.coordinate.lng,
+				lat: req.coordinate.lat,
+				id_subd: addressData.id_subd,
 				// name_subd: subd.name,
-				id_city: req.id_city,
+				id_city: addressData.id_city,
 				// name_city: city.name,
-				id_prov: req.id_prov,
+				id_prov: addressData.id_prov,
 				// name_prov: prov.name,
 				id_status: 1,
 				shipping_cost: dataSystemCost.shipping_cost,
@@ -606,6 +612,8 @@ const cancel = async (id_user) => {
 			id_merchant: true,
 			id_courier: true,
 			destination: true,
+			lng: true,
+			lat: true,
 			shipping_cost: true,
 			service_cost: true,
 			id_city: true,
@@ -690,6 +698,8 @@ const cancel = async (id_user) => {
 				id_courier: findOrder?.id_courier,
 				name_courier: findOrder?.rel_courier?.name,
 				destination: findOrder.destination,
+				lng: findOrder.lng,
+				lat: findOrder.lat,
 				shipping_cost: findOrder.shipping_cost,
 				service_cost: findOrder.service_cost,
 				id_city: findOrder.id_city,

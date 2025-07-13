@@ -38,6 +38,8 @@ const getDataOrderForHistory = async (id_order, id_merchant) => {
 		select: {
 			id: true,
 			destination: true,
+			lng: true,
+			lat: true,
 			shipping_cost: true,
 			service_cost: true,
 			rel_user: {

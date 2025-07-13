@@ -15,6 +15,7 @@ import {
 } from '../validation/merchant-validation.js'
 import {prismaClient} from '../application/database.js'
 import {ErrorResponse} from '../application/error-response.js'
+import {getAddressWithCoordinate} from '../application/geo-json.js'
 import uniqid from 'uniqid'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
@@ -96,7 +97,14 @@ const deleteImageOLD = async (id_merchant, filename) => {
 const register = async (file, request) => {
 	const data = validate(registerMerchantValidation, request)
 
-	const {confirm_password, ...req} = data
+	const {confirm_password, coordinates, ...req} = data
+	req.lng = coordinates.lng
+	req.lat = coordinates.lat
+
+	const addressData = await getAddressWithCoordinate(data.coordinates)
+	req.id_subd = addressData.id_subd
+	req.id_city = addressData.id_city
+	req.id_prov = addressData.id_prov
 
 	if(!file){
 		throw new ErrorResponse(400, 'Gambar tidak boleh kosong')
@@ -176,6 +184,8 @@ const get = async (id) => {
 			username: true,
 			name: true,
 			address: true,
+			lng: true,
+			lat: true,
 			image: true,
 			rel_subd: {
 				select: {
@@ -212,12 +222,18 @@ const get = async (id) => {
 
 	const merchant = {
 		...data,
+		coordinates: {
+			lng: data.lng,
+			lat: data.lat
+		},
 		subd: data.rel_subd,
 		city: data.rel_city,
 		prov: data.rel_prov,
 		status: data.rel_status
 	}
 
+	delete merchant.lng
+	delete merchant.lat
 	delete merchant.rel_subd
 	delete merchant.rel_city
 	delete merchant.rel_prov
@@ -227,8 +243,12 @@ const get = async (id) => {
 }
 
 const update = async (id, file, request) => {
+	console.log(request)
 	const req = validate(updateMerchantValidation, request)
 	console.log(req)
+
+	const addressData = await getAddressWithCoordinate(req.coordinates)
+
 	const data = {}
 
 	const imageUrl = await uploadImage(id, file)
@@ -246,16 +266,24 @@ const update = async (id, file, request) => {
 		data.address = req.address
 	}
 
-	if(req.id_subd){
-		data.id_subd = req.id_subd
+	// if(req.id_subd){
+	// 	data.id_subd = req.id_subd
+	// }
+
+	// if(req.id_city){
+	// 	data.id_city = req.id_city
+	// }
+
+	// if(req.id_prov){
+	// 	data.id_prov = req.id_prov
+	// }
+
+	if(req.coordinates.lng){
+		data.lng = req.coordinates.lng
 	}
 
-	if(req.id_city){
-		data.id_city = req.id_city
-	}
-
-	if(req.id_prov){
-		data.id_prov = req.id_prov
+	if(req.coordinates.lat){
+		data.lat = req.coordinates.lat
 	}
 
 	if(req.email){
@@ -269,6 +297,10 @@ const update = async (id, file, request) => {
 	if(file){
 		data.image = imageUrl
 	}
+
+	data.id_subd = addressData.id_subd
+	data.id_city = addressData.id_city
+	data.id_prov = addressData.id_prov
 
 	// Mengecek apakah properti phone benar-benar ada di dalam objek req, meskipun nilainya undefined atau kosong string ('')
 	// if('phone' in req){
