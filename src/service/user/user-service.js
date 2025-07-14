@@ -86,6 +86,7 @@ const get = async (id) => {
 			username: true,
 			email: true,
 			phone: true,
+			poin: true,
 			rel_status: {
 				select: {
 					name: true
