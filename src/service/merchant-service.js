@@ -251,8 +251,9 @@ const update = async (id, file, request) => {
 
 	const data = {}
 
+	let imageUrl
 	if(file){
-		const imageUrl = await uploadImage(id, file)
+		imageUrl = await uploadImage(id, file)
 	}
 	
 	data.update_at = new Date()

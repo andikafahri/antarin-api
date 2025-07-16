@@ -4,7 +4,7 @@ node_modules
 prisma/schema OLD V2.prisma
 src/generated_OLD/*
 src/generated/*
-#src/application/app.js
+src/application/app.js
 src/application/app NO REALTIME.js
 src/service/user/order-service FIX OLD.js
 src/service/menu-service OLD.js
