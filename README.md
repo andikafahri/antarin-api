@@ -1,29 +1,7 @@
-# Antarin - Web App With React JS
+# Antarin API With Node JS
 
-A simple and efficient delivery service platform built with **React JS**.
+API food delivery service platform built with **Node JS** and **MySQL**.
 
-## 🔗 Live Preview
+## 🔗 Live Preview Web APP
 
 🌐 [Live Demo](https://antarin-web.vercel.app)
-
-## Admin
-### Account :
-- Username: admin
-- Password: admin123A
-
-### 📦 Features
-- Update Account
-- CRUD Time Operational
-- CRUD Menu
-- Manage Order
-
-## 📦 User
-### 📦 Features
-- Register
-- Update Account
-- Search Menu/Merchant
-- View Merchant/Menu
-- Order
-- Cancel Order
-- View Status Order
-
